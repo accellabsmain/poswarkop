@@ -152,12 +152,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Tambahkan validasi pecahan kembalian uang tunai (Cash) dan penanganan transaksi non-tunai (QRIS / Transfer) langsung di dalam stored procedure.
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 4.4**: Fast POS Checkout UX Refinement
-  - Optimalkan pencarian produk via keyboard (shortcut focus `/`), filter kategori cepat, dan penambahan quantity ke cart tanpa lag.
-- [ ] **Task 4.5**: Cart Drawer & Payment Modal UX
-  - Sempurnakan tampilan Cart Drawer: kalkulasi total, tombol pecahan uang cepat (Rp 10k, 20k, 50k, 100k, Uang Pas), dan panggil RPC `process_sale_transaction`.
-- [ ] **Task 4.6**: Thermal Receipt Preview & Printing
-  - Implementasikan modal pratinjau struk penjualan dan styling cetak CSS `@media print` untuk printer thermal.
+- [x] **Task 4.4**: Fast POS Checkout UX Refinement
+  - Optimalkan pencarian produk via keyboard (shortcut focus `/`), filter kategori cepat, dan penambahan quantity ke cart tanpa lag. *(Selesai: Shortcut `/`, `F2`, `Escape` & client-side filtering aktif)*
+- [x] **Task 4.5**: Cart Drawer & Payment Modal UX
+  - Sempurnakan tampilan Cart Drawer: kalkulasi total, tombol pecahan uang cepat (Rp 10k, 20k, 50k, 100k, Uang Pas), dan panggil RPC `process_sale_transaction`. *(Selesai: Cart drawer UX & quick cash payment modal selesai)*
+- [x] **Task 4.6**: Thermal Receipt Preview & Printing
+  - Implementasikan modal pratinjau struk penjualan dan styling cetak CSS `@media print` untuk printer thermal. *(Selesai: ReceiptModal & ReceiptPrint thermal formatting 80mm selesai)*
 
 ---
 
@@ -174,12 +174,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Query log aktivitas sistem (`audit_logs`) untuk keperluan pengawasan aktivitas kasir & manager.
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 5.4**: User & Role Management Dashboard UI
-  - Tampilkan tabel seluruh staf, indikator role, serta modal untuk alokasi toko & ubah role.
-- [ ] **Task 5.5**: Multi-Store Analytics Summary Dashboard
-  - Tampilkan kartu KPI omset total bisnis vs per toko, grafik perbandingan penjualan toko, dan daftar produk terlaris.
-- [ ] **Task 5.6**: Export Report Feature (CSV / PDF)
-  - Fitur unduh laporan transaksi penjualan dan stok ke format CSV/PDF.
+- [x] **Task 5.4**: User & Role Management Dashboard UI
+  - Tampilkan tabel seluruh staf, indikator role, serta modal untuk alokasi toko & ubah role. *(Selesai: Employee management UI, role badges & store access modal selesai)*
+- [x] **Task 5.5**: Multi-Store Analytics Summary Dashboard
+  - Tampilkan kartu KPI omset total bisnis vs per toko, grafik perbandingan penjualan toko, dan daftar produk terlaris. *(Selesai: Multi-store dashboard, KPI cards, revenue comparison bars & top products ranking)*
+- [x] **Task 5.6**: Export Report Feature (CSV / PDF)
+  - Fitur unduh laporan transaksi penjualan dan stok ke format CSV/PDF. *(Selesai: Utility export CSV untuk Penjualan, Dashboard, dan Inventaris aktif)*
 
 ---
 

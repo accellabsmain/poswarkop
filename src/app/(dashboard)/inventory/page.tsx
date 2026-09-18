@@ -8,7 +8,8 @@ import { InventoryItem, Product } from '@/types';
 import { StatusBadge } from '@/components/ui/badge';
 import { StockAdjustModal } from '@/components/inventory/stock-adjust-modal';
 import { StockTransferModal } from '@/components/inventory/stock-transfer-modal';
-import { Boxes, Sliders, History, Search, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import { Boxes, Sliders, History, Search, RefreshCw, ArrowRightLeft, Download } from 'lucide-react';
+import { exportInventoryToCSV } from '@/lib/export-utils';
 
 export default function InventoryPage() {
   const { activeStore } = useStore();
@@ -42,6 +43,10 @@ export default function InventoryPage() {
     setData(getInventoryData());
   }, [getInventoryData]);
 
+  const handleExportCSV = () => {
+    exportInventoryToCSV(data.inventory, activeStore.name);
+  };
+
   const handleOpenAdjust = (item: InventoryItem & { product: Product }) => {
     setSelectedItem(item);
     setIsAdjustOpen(true);
@@ -73,11 +78,19 @@ export default function InventoryPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+          >
+            <Download className="h-4 w-4" />
+            <span>Ekspor Stok (CSV)</span>
+          </button>
+
           {isManager && (
             <button
               onClick={() => setIsTransferOpen(true)}
-              className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+              className="flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-extrabold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300 transition-all"
             >
               <ArrowRightLeft className="h-4 w-4" />
               <span>Transfer Stok Antar Toko</span>

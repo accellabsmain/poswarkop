@@ -31,6 +31,14 @@ export function CheckoutModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setAmountReceived(totalAmount);
+      setErrorMsg(null);
+      setNotes('');
+    }
+  }, [isOpen, totalAmount]);
+
   if (!isOpen) return null;
 
   const changeAmount = Math.max(0, amountReceived - totalAmount);
