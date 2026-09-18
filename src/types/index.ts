@@ -130,3 +130,40 @@ export interface SaleReceiptData {
   payment: Payment;
   cashier_name: string;
 }
+
+export interface StockTransferItem {
+  id: string;
+  transfer_id: string;
+  product_id: string;
+  product_name?: string;
+  quantity: number;
+  transfer_price?: number;
+}
+
+export interface StockTransfer {
+  id: string;
+  transfer_number: string;
+  from_store_id: string;
+  from_store_name?: string;
+  to_store_id: string;
+  to_store_name?: string;
+  user_id?: string | null;
+  user_name?: string;
+  notes?: string | null;
+  created_at: string;
+  items?: StockTransferItem[];
+}
+
+export interface LowStockProduct {
+  product_id: string;
+  product_name: string;
+  sku: string;
+  barcode?: string | null;
+  category_id?: string | null;
+  category_name: string;
+  unit: string;
+  selling_price: number;
+  current_stock: number;
+  minimum_stock: number;
+  status: 'LOW_STOCK' | 'OUT_OF_STOCK';
+}

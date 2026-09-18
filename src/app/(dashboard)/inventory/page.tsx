@@ -36,10 +36,9 @@ export default function InventoryPage() {
   }, [getInventoryData]);
 
   // Sync when active store changes
-  const currentData = getInventoryData();
-  if (data.inventory !== currentData.inventory && data.inventory[0]?.store_id !== activeStore.id) {
-    setData(currentData);
-  }
+  React.useEffect(() => {
+    setData(getInventoryData());
+  }, [getInventoryData]);
 
   const handleOpenAdjust = (item: InventoryItem & { product: Product }) => {
     setSelectedItem(item);

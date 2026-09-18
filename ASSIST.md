@@ -96,14 +96,14 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Mengamankan sistem dengan hak akses berbasis role (`owner`, `manager`, `cashier`) dari layer Database (RLS) hingga UI Navigation.
 
 ### 🛠️ Backend Tasks — [ 👤 Lintang ]
-- [ ] **Task 2.1**: Supabase Auth Auto-Profile Trigger
-  - Buat PostgreSQL function `handle_new_user()` agar pendaftaran user baru otomatis mengisi tabel `profiles` dengan role default `'cashier'`.
-- [ ] **Task 2.2**: Tighten Row Level Security (RLS) Policies
+- [x] **Task 2.1**: Supabase Auth Auto-Profile Trigger
+  - Buat PostgreSQL function `handle_new_user()` agar pendaftaran user baru otomatis mengisi tabel `profiles` dengan role default `'cashier'`. *(Selesai: `handle_new_user()` trigger on `auth.users`)*
+- [x] **Task 2.2**: Tighten Row Level Security (RLS) Policies
   - `products` & `categories`: Kasir hanya `SELECT`, Owner/Manager bisa `INSERT/UPDATE/DELETE`.
   - `inventory` & `sales`: Validasi ketat menggunakan helper `user_has_store_access(store_id)`.
-  - `profiles` & `user_stores`: Hanya role `'owner'` yang bisa mengubah role dan hak akses toko user lain.
-- [ ] **Task 2.3**: Session & Role Verification Helper
-  - Sediakan helper server-side Next.js (`@supabase/ssr`) untuk mengecek role user saat ini.
+  - `profiles` & `user_stores`: Hanya role `'owner'` yang bisa mengubah role dan hak akses toko user lain. *(Selesai: RLS policies tightened di `supabase/schema.sql` & migrasi)*
+- [x] **Task 2.3**: Session & Role Verification Helper
+  - Sediakan helper server-side Next.js (`@supabase/ssr`) untuk mengecek role user saat ini. *(Selesai: `src/lib/supabase/server-auth.ts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
 - [ ] **Task 2.4**: Integration Login Page & Session State
@@ -122,12 +122,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Menjamin isolasi stok tiap toko dan menyediakan fitur transfer barang aman dari toko pusat (Toko Mas Budi) ke Warkop via Supabase RPC.
 
 ### 🛠️ Backend Tasks — [ 👤 Lintang ]
-- [ ] **Task 3.1**: Stored Procedure / RPC Function `transfer_store_stock()`
-  - Buat atomic RPC function di PostgreSQL untuk memindahkan stok dari `store_from` ke `store_to` (mengurangi stok asal & menambah stok tujuan secara atomic).
-- [ ] **Task 3.2**: Stock Movement Logging Engine
-  - Otomatis mencatat 2 log entri pada `stock_movements`: `TRANSFER_OUT` pada toko asal & `TRANSFER_IN` pada toko tujuan di dalam RPC function.
-- [ ] **Task 3.3**: Low Stock Threshold Query Function
-  - Buat query/view RPC untuk mendapatkan daftar produk yang stoknya di bawah `minimum_stock` per toko.
+- [x] **Task 3.1**: Stored Procedure / RPC Function `transfer_store_stock()`
+  - Buat atomic RPC function di PostgreSQL untuk memindahkan stok dari `store_from` ke `store_to` (mengurangi stok asal & menambah stok tujuan secara atomic). *(Selesai: `transfer_store_stock()` with row-locking)*
+- [x] **Task 3.2**: Stock Movement Logging Engine
+  - Otomatis mencatat 2 log entri pada `stock_movements`: `TRANSFER_OUT` pada toko asal & `TRANSFER_IN` pada toko tujuan di dalam RPC function. *(Selesai: 2 audit movement records with `reference_id`)*
+- [x] **Task 3.3**: Low Stock Threshold Query Function
+  - Buat query/view RPC untuk mendapatkan daftar produk yang stoknya di bawah `minimum_stock` per toko. *(Selesai: RPC `get_low_stock_products()` & view `view_low_stock_alerts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
 - [ ] **Task 3.4**: Inter-Store Transfer UI Modal

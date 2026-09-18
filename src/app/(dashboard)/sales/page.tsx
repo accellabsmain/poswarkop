@@ -24,10 +24,9 @@ export default function SalesHistoryPage() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   // Sync state when activeStore changes
-  const currentSales = getSalesForStore();
-  if (sales !== currentSales && (sales.length !== currentSales.length || sales[0]?.id !== currentSales[0]?.id)) {
-    setSales(currentSales);
-  }
+  React.useEffect(() => {
+    setSales(getSalesForStore());
+  }, [getSalesForStore]);
 
   const handleOpenReceipt = (saleId: string) => {
     const data = StorageService.getSaleById(saleId);

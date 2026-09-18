@@ -43,14 +43,9 @@ export default function DashboardPage() {
   const [data, setData] = useState(getDashboardData);
 
   // Sync state when activeStore changes
-  const currentData = getDashboardData();
-  if (
-    data.salesToday.length !== currentData.salesToday.length ||
-    data.lowStockItems.length !== currentData.lowStockItems.length ||
-    data.allProductsCount !== currentData.allProductsCount
-  ) {
-    setData(currentData);
-  }
+  React.useEffect(() => {
+    setData(getDashboardData());
+  }, [getDashboardData]);
 
   const { salesToday, totalRevenueToday, lowStockItems, allProductsCount } = data;
 
