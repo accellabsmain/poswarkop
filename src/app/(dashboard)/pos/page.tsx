@@ -40,10 +40,9 @@ export default function PosPage() {
   }, [getPosData]);
 
   // Sync state if activeStore changes
-  const currentData = getPosData();
-  if (posData.inventory !== currentData.inventory && posData.inventory[0]?.store_id !== activeStore.id) {
-    setPosData(currentData);
-  }
+  React.useEffect(() => {
+    setPosData(getPosData());
+  }, [getPosData]);
 
   const { categories, inventory: storeInventory } = posData;
 

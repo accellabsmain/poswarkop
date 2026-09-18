@@ -144,6 +144,27 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 13. Stock Transfers Table (Phase 3: Inter-Store Stock Movement)
+CREATE TABLE IF NOT EXISTS stock_transfers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transfer_number TEXT NOT NULL UNIQUE,
+    from_store_id UUID NOT NULL REFERENCES stores(id) ON DELETE RESTRICT,
+    to_store_id UUID NOT NULL REFERENCES stores(id) ON DELETE RESTRICT,
+    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT chk_different_stores CHECK (from_store_id <> to_store_id)
+);
+
+-- 14. Stock Transfer Items Table
+CREATE TABLE IF NOT EXISTS stock_transfer_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transfer_id UUID NOT NULL REFERENCES stock_transfers(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    transfer_price NUMERIC(12, 2) DEFAULT 0 CHECK (transfer_price >= 0)
+);
+
 -- ==========================================
 -- ATOMIC DATABASE FUNCTIONS
 -- ==========================================
@@ -276,63 +297,347 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Function for Atomic Inter-Store Stock Transfer (Task 3.1 & 3.2)
+CREATE OR REPLACE FUNCTION public.transfer_store_stock(
+    p_from_store_id UUID,
+    p_to_store_id UUID,
+    p_product_id UUID,
+    p_quantity INT,
+    p_transfer_price NUMERIC DEFAULT 0,
+    p_notes TEXT DEFAULT NULL,
+    p_user_id UUID DEFAULT NULL
+) RETURNS JSONB AS $$
+DECLARE
+    v_user_id UUID;
+    v_current_stock INT := 0;
+    v_new_source_stock INT;
+    v_new_dest_stock INT;
+    v_transfer_id UUID;
+    v_transfer_number TEXT;
+    v_from_store_name TEXT;
+    v_to_store_name TEXT;
+    v_product_name TEXT;
+    v_default_price NUMERIC;
+BEGIN
+    IF p_from_store_id = p_to_store_id THEN
+        RAISE EXCEPTION 'Toko asal dan toko tujuan transfer tidak boleh sama.';
+    END IF;
+
+    IF p_quantity <= 0 THEN
+        RAISE EXCEPTION 'Jumlah stok yang ditransfer harus lebih dari 0.';
+    END IF;
+
+    v_user_id := COALESCE(p_user_id, auth.uid());
+
+    SELECT name INTO v_from_store_name FROM public.stores WHERE id = p_from_store_id;
+    IF v_from_store_name IS NULL THEN
+        RAISE EXCEPTION 'Toko asal (from_store_id) tidak ditemukan.';
+    END IF;
+
+    SELECT name INTO v_to_store_name FROM public.stores WHERE id = p_to_store_id;
+    IF v_to_store_name IS NULL THEN
+        RAISE EXCEPTION 'Toko tujuan (to_store_id) tidak ditemukan.';
+    END IF;
+
+    SELECT name, purchase_price INTO v_product_name, v_default_price
+    FROM public.products WHERE id = p_product_id;
+    IF v_product_name IS NULL THEN
+        RAISE EXCEPTION 'Produk tidak ditemukan.';
+    END IF;
+
+    IF p_transfer_price IS NULL OR p_transfer_price = 0 THEN
+        p_transfer_price := COALESCE(v_default_price, 0);
+    END IF;
+
+    -- Row-locking on source store
+    SELECT COALESCE(quantity, 0) INTO v_current_stock
+    FROM public.inventory
+    WHERE store_id = p_from_store_id AND product_id = p_product_id
+    FOR UPDATE;
+
+    IF v_current_stock IS NULL OR v_current_stock < p_quantity THEN
+        RAISE EXCEPTION 'Stok tidak mencukupi di %. Stok saat ini: %, diminta: %.',
+            v_from_store_name, COALESCE(v_current_stock, 0), p_quantity;
+    END IF;
+
+    v_transfer_number := 'TRF-' || to_char(now(), 'YYYYMMDD') || '-' || upper(substring(gen_random_uuid()::text from 1 for 6));
+
+    INSERT INTO public.stock_transfers (
+        transfer_number, from_store_id, to_store_id, user_id, notes, created_at
+    ) VALUES (
+        v_transfer_number, p_from_store_id, p_to_store_id, v_user_id, p_notes, now()
+    ) RETURNING id INTO v_transfer_id;
+
+    INSERT INTO public.stock_transfer_items (
+        transfer_id, product_id, quantity, transfer_price
+    ) VALUES (
+        v_transfer_id, p_product_id, p_quantity, p_transfer_price
+    );
+
+    -- Reduce stock at source store
+    v_new_source_stock := v_current_stock - p_quantity;
+    UPDATE public.inventory
+    SET quantity = v_new_source_stock, updated_at = now()
+    WHERE store_id = p_from_store_id AND product_id = p_product_id;
+
+    -- Upsert stock at destination store
+    INSERT INTO public.inventory (store_id, product_id, quantity, updated_at)
+    VALUES (p_to_store_id, p_product_id, p_quantity, now())
+    ON CONFLICT (store_id, product_id)
+    DO UPDATE SET quantity = public.inventory.quantity + EXCLUDED.quantity, updated_at = now()
+    RETURNING quantity INTO v_new_dest_stock;
+
+    -- Task 3.2: Record 2 movements
+    INSERT INTO public.stock_movements (
+        product_id, store_id, type, quantity, reference_id, notes, user_id, created_at
+    ) VALUES (
+        p_product_id, p_from_store_id, 'TRANSFER_OUT', -p_quantity, v_transfer_id,
+        COALESCE(p_notes, 'Transfer ke ' || v_to_store_name || ' (' || v_transfer_number || ')'), v_user_id, now()
+    );
+
+    INSERT INTO public.stock_movements (
+        product_id, store_id, type, quantity, reference_id, notes, user_id, created_at
+    ) VALUES (
+        p_product_id, p_to_store_id, 'TRANSFER_IN', p_quantity, v_transfer_id,
+        COALESCE(p_notes, 'Transfer masuk dari ' || v_from_store_name || ' (' || v_transfer_number || ')'), v_user_id, now()
+    );
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'transfer_id', v_transfer_id,
+        'transfer_number', v_transfer_number,
+        'product_id', p_product_id,
+        'product_name', v_product_name,
+        'quantity', p_quantity,
+        'from_store', jsonb_build_object('id', p_from_store_id, 'name', v_from_store_name, 'remaining_stock', v_new_source_stock),
+        'to_store', jsonb_build_object('id', p_to_store_id, 'name', v_to_store_name, 'new_stock', v_new_dest_stock),
+        'created_at', now()
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Function for Low Stock Threshold Query (Task 3.3)
+CREATE OR REPLACE FUNCTION public.get_low_stock_products(
+    p_store_id UUID
+) RETURNS TABLE (
+    product_id UUID,
+    product_name TEXT,
+    sku TEXT,
+    barcode TEXT,
+    category_id UUID,
+    category_name TEXT,
+    unit TEXT,
+    selling_price NUMERIC,
+    current_stock INT,
+    minimum_stock INT,
+    status TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        p.id AS product_id,
+        p.name AS product_name,
+        p.sku,
+        p.barcode,
+        p.category_id,
+        COALESCE(c.name, 'Uncategorized') AS category_name,
+        p.unit,
+        p.selling_price,
+        COALESCE(inv.quantity, 0) AS current_stock,
+        p.minimum_stock,
+        CASE
+            WHEN COALESCE(inv.quantity, 0) <= 0 THEN 'OUT_OF_STOCK'
+            ELSE 'LOW_STOCK'
+        END AS status
+    FROM public.products p
+    LEFT JOIN public.categories c ON c.id = p.category_id
+    INNER JOIN public.inventory inv ON inv.product_id = p.id AND inv.store_id = p_store_id
+    WHERE p.is_active = true
+      AND inv.quantity <= p.minimum_stock
+    ORDER BY
+        (COALESCE(inv.quantity, 0) <= 0) DESC,
+        inv.quantity ASC,
+        p.name ASC;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
+
+-- View for Cross-Store Low Stock Alerts
+CREATE OR REPLACE VIEW public.view_low_stock_alerts AS
+SELECT
+    s.id AS store_id,
+    s.name AS store_name,
+    s.code AS store_code,
+    p.id AS product_id,
+    p.name AS product_name,
+    p.sku,
+    c.name AS category_name,
+    p.unit,
+    inv.quantity AS current_stock,
+    p.minimum_stock,
+    CASE
+        WHEN inv.quantity <= 0 THEN 'OUT_OF_STOCK'
+        ELSE 'LOW_STOCK'
+    END AS status
+FROM public.inventory inv
+JOIN public.stores s ON s.id = inv.store_id
+JOIN public.products p ON p.id = inv.product_id
+LEFT JOIN public.categories c ON c.id = p.category_id
+WHERE p.is_active = true
+  AND inv.quantity <= p.minimum_stock
+ORDER BY s.name, inv.quantity ASC;
+
 -- ==========================================
--- ROW LEVEL SECURITY (RLS) POLICIES
+-- AUTH TRIGGERS & HOOKS (TASK 2.1)
 -- ==========================================
 
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_stores ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sale_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+-- Trigger to automatically create a profile when a new user signs up via Supabase Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_full_name TEXT;
+    v_default_role user_role := 'cashier';
+BEGIN
+    v_full_name := COALESCE(
+        new.raw_user_meta_data->>'full_name',
+        NULLIF(split_part(new.email, '@', 1), ''),
+        'Kasir Baru'
+    );
+
+    INSERT INTO public.profiles (id, full_name, role, created_at)
+    VALUES (new.id, v_full_name, v_default_role, now())
+    ON CONFLICT (id) DO UPDATE
+    SET full_name = EXCLUDED.full_name;
+
+    RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ==========================================
+-- ROW LEVEL SECURITY (RLS) POLICIES (TASK 2.2)
+-- ==========================================
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_stores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_movements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sale_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- Helper functions for RLS
-CREATE OR REPLACE FUNCTION auth_user_role() RETURNS user_role AS $$
-    SELECT role FROM profiles WHERE id = auth.uid();
-$$ LANGUAGE sql STABLE;
+CREATE OR REPLACE FUNCTION public.auth_user_role() RETURNS user_role AS $$
+    SELECT role FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE FUNCTION user_has_store_access(p_store_id UUID) RETURNS BOOLEAN AS $$
+CREATE OR REPLACE FUNCTION public.user_has_store_access(p_store_id UUID) RETURNS BOOLEAN AS $$
     SELECT EXISTS (
-        SELECT 1 FROM user_stores WHERE user_id = auth.uid() AND store_id = p_store_id
-    ) OR (auth_user_role() = 'owner');
-$$ LANGUAGE sql STABLE;
+        SELECT 1 FROM public.user_stores WHERE user_id = auth.uid() AND store_id = p_store_id
+    ) OR (public.auth_user_role() = 'owner');
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
 
--- Profiles: Users can read profiles, owner can manage
-CREATE POLICY profiles_select ON profiles FOR SELECT USING (true);
-CREATE POLICY profiles_all_owner ON profiles FOR ALL USING (auth_user_role() = 'owner');
+-- Profiles: Users can read profiles; user can edit own name; owner has full control
+CREATE POLICY profiles_select ON public.profiles FOR SELECT USING (true);
+CREATE POLICY profiles_update_self ON public.profiles FOR UPDATE
+    USING (id = auth.uid())
+    WITH CHECK (id = auth.uid() AND role = (SELECT role FROM public.profiles WHERE id = auth.uid()));
+CREATE POLICY profiles_all_owner ON public.profiles FOR ALL USING (public.auth_user_role() = 'owner');
 
--- Stores: Anyone authenticated can view allowed stores
-CREATE POLICY stores_select ON stores FOR SELECT USING (user_has_store_access(id));
-CREATE POLICY stores_owner ON stores FOR ALL USING (auth_user_role() = 'owner');
+-- User Stores: Users view their store assignments; owner can assign/manage
+CREATE POLICY user_stores_select ON public.user_stores FOR SELECT
+    USING (user_id = auth.uid() OR public.auth_user_role() = 'owner');
+CREATE POLICY user_stores_all_owner ON public.user_stores FOR ALL
+    USING (public.auth_user_role() = 'owner')
+    WITH CHECK (public.auth_user_role() = 'owner');
+
+-- Stores: Anyone with access can view; owner can manage
+CREATE POLICY stores_select ON public.stores FOR SELECT USING (public.user_has_store_access(id));
+CREATE POLICY stores_owner ON public.stores FOR ALL USING (public.auth_user_role() = 'owner');
 
 -- Categories & Products: Authenticated users can view; owner/manager can edit
-CREATE POLICY categories_select ON categories FOR SELECT USING (true);
-CREATE POLICY categories_admin ON categories FOR ALL USING (auth_user_role() IN ('owner', 'manager'));
+CREATE POLICY categories_select ON public.categories FOR SELECT USING (true);
+CREATE POLICY categories_admin ON public.categories FOR ALL
+    USING (public.auth_user_role() IN ('owner', 'manager'))
+    WITH CHECK (public.auth_user_role() IN ('owner', 'manager'));
 
-CREATE POLICY products_select ON products FOR SELECT USING (true);
-CREATE POLICY products_admin ON products FOR ALL USING (auth_user_role() IN ('owner', 'manager'));
+CREATE POLICY products_select ON public.products FOR SELECT USING (true);
+CREATE POLICY products_admin ON public.products FOR ALL
+    USING (public.auth_user_role() IN ('owner', 'manager'))
+    WITH CHECK (public.auth_user_role() IN ('owner', 'manager'));
 
--- Inventory: Accessible per store access
-CREATE POLICY inventory_select ON inventory FOR SELECT USING (user_has_store_access(store_id));
-CREATE POLICY inventory_admin ON inventory FOR ALL USING (user_has_store_access(store_id));
+-- Inventory: Accessible per store access; modifications restricted to owner & manager
+CREATE POLICY inventory_select ON public.inventory FOR SELECT USING (public.user_has_store_access(store_id));
+CREATE POLICY inventory_admin ON public.inventory FOR ALL
+    USING (public.user_has_store_access(store_id) AND public.auth_user_role() IN ('owner', 'manager'))
+    WITH CHECK (public.user_has_store_access(store_id) AND public.auth_user_role() IN ('owner', 'manager'));
 
 -- Stock Movements: Accessible per store access
-CREATE POLICY movements_select ON stock_movements FOR SELECT USING (user_has_store_access(store_id));
-CREATE POLICY movements_insert ON stock_movements FOR INSERT WITH CHECK (user_has_store_access(store_id));
+CREATE POLICY movements_select ON public.stock_movements FOR SELECT USING (public.user_has_store_access(store_id));
+CREATE POLICY movements_insert ON public.stock_movements FOR INSERT WITH CHECK (public.user_has_store_access(store_id));
 
 -- Sales, Sale Items, Payments: Accessible per store access
-CREATE POLICY sales_select ON sales FOR SELECT USING (user_has_store_access(store_id));
-CREATE POLICY sales_insert ON sales FOR INSERT WITH CHECK (user_has_store_access(store_id));
+CREATE POLICY sales_select ON public.sales FOR SELECT USING (public.user_has_store_access(store_id));
+CREATE POLICY sales_insert ON public.sales FOR INSERT WITH CHECK (public.user_has_store_access(store_id));
 
-CREATE POLICY sale_items_select ON sale_items FOR SELECT USING (
-    EXISTS (SELECT 1 FROM sales s WHERE s.id = sale_id AND user_has_store_access(s.store_id))
+CREATE POLICY sale_items_select ON public.sale_items FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.sales s WHERE s.id = sale_id AND public.user_has_store_access(s.store_id))
+);
+CREATE POLICY sale_items_insert ON public.sale_items FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.sales s WHERE s.id = sale_id AND public.user_has_store_access(s.store_id))
 );
 
-CREATE POLICY payments_select ON payments FOR SELECT USING (
-    EXISTS (SELECT 1 FROM sales s WHERE s.id = sale_id AND user_has_store_access(s.store_id))
+CREATE POLICY payments_select ON public.payments FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.sales s WHERE s.id = sale_id AND public.user_has_store_access(s.store_id))
 );
+CREATE POLICY payments_insert ON public.payments FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.sales s WHERE s.id = sale_id AND public.user_has_store_access(s.store_id))
+);
+
+-- Stock Transfers: Accessible if user has access to source or destination store
+ALTER TABLE public.stock_transfers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_transfer_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY stock_transfers_select ON public.stock_transfers FOR SELECT
+    USING (
+        public.user_has_store_access(from_store_id)
+        OR public.user_has_store_access(to_store_id)
+        OR public.auth_user_role() = 'owner'
+    );
+
+CREATE POLICY stock_transfers_insert ON public.stock_transfers FOR INSERT
+    WITH CHECK (
+        (public.user_has_store_access(from_store_id) AND public.auth_user_role() IN ('owner', 'manager'))
+        OR public.auth_user_role() = 'owner'
+    );
+
+CREATE POLICY stock_transfer_items_select ON public.stock_transfer_items FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.stock_transfers t
+            WHERE t.id = transfer_id
+            AND (
+                public.user_has_store_access(t.from_store_id)
+                OR public.user_has_store_access(t.to_store_id)
+                OR public.auth_user_role() = 'owner'
+            )
+        )
+    );
+
+CREATE POLICY stock_transfer_items_insert ON public.stock_transfer_items FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.stock_transfers t
+            WHERE t.id = transfer_id
+            AND (
+                (public.user_has_store_access(t.from_store_id) AND public.auth_user_role() IN ('owner', 'manager'))
+                OR public.auth_user_role() = 'owner'
+            )
+        )
+    );
