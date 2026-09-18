@@ -462,7 +462,9 @@ END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
 
 -- View for Cross-Store Low Stock Alerts
-CREATE OR REPLACE VIEW public.view_low_stock_alerts AS
+CREATE OR REPLACE VIEW public.view_low_stock_alerts
+WITH (security_invoker = true)
+AS
 SELECT
     s.id AS store_id,
     s.name AS store_name,
