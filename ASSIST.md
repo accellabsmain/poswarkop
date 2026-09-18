@@ -106,14 +106,14 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Sediakan helper server-side Next.js (`@supabase/ssr`) untuk mengecek role user saat ini. *(Selesai: `src/lib/supabase/server-auth.ts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 2.4**: Integration Login Page & Session State
-  - Hubungkan form login di `/login` ke Supabase Auth (`supabase.auth.signInWithPassword`) & perbarui `StoreContext` dengan data profil user yang aktif.
-- [ ] **Task 2.5**: Dynamic Sidebar & Route Guard per Role
+- [x] **Task 2.4**: Integration Login Page & Session State
+  - Hubungkan form login di `/login` ke Supabase Auth (`supabase.auth.signInWithPassword`) & perbarui `StoreContext` dengan data profil user yang aktif. *(Selesai: Form Login & Session State terhubung)*
+- [x] **Task 2.5**: Dynamic Sidebar & Route Guard per Role
   - Sembunyikan menu *Produk*, *Laporan*, dan *Manajemen User* jika user yang login adalah **Kasir**.
   - Sembunyikan/Disable tombol *Edit Produk*, *Hapus Produk*, dan *Adjust Stok* jika role adalah **Kasir**.
-  - Buat komponen HOC / Guard untuk meredirect Kasir jika mencoba membuka URL `/products` secara manual.
-- [ ] **Task 2.6**: Store Switcher Locking
-  - Kasir/Manager hanya dapat memilih toko yang terdaftar di tabel `user_stores` miliknya. Role `owner` dapat memilih semua toko.
+  - Buat komponen HOC / Guard untuk meredirect Kasir jika mencoba membuka URL `/products` secara manual. *(Selesai: Sidebar RBAC & Route Guard diselesaikan)*
+- [x] **Task 2.6**: Store Switcher Locking
+  - Kasir/Manager hanya dapat memilih toko yang terdaftar di tabel `user_stores` miliknya. Role `owner` dapat memilih semua toko. *(Selesai: Store switcher filtered by user.stores)*
 
 ---
 
@@ -130,12 +130,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Buat query/view RPC untuk mendapatkan daftar produk yang stoknya di bawah `minimum_stock` per toko. *(Selesai: RPC `get_low_stock_products()` & view `view_low_stock_alerts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 3.4**: Inter-Store Transfer UI Modal
-  - Buat modal form transaksi transfer: pilih produk, toko tujuan, jumlah transfer, dan panggil `supabase.rpc('transfer_store_stock', ...)`.
-- [ ] **Task 3.5**: Low Stock Warning Badge & Indicator
-  - Tampilkan badge indikator stok menipis pada katalog produk dan tabel inventaris toko.
-- [ ] **Task 3.6**: Stock Movement History View
-  - Tampilkan riwayat pergerakan stok (Purchase, Sale, Transfer, Adjustment) dengan filter jenis movement dan tanggal.
+- [x] **Task 3.4**: Inter-Store Transfer UI Modal
+  - Buat modal form transaksi transfer: pilih produk, toko tujuan, jumlah transfer, dan panggil `supabase.rpc('transfer_store_stock', ...)`. *(Selesai: `StockTransferModal` diselesaikan)*
+- [x] **Task 3.5**: Low Stock Warning Badge & Indicator
+  - Tampilkan badge indikator stok menipis pada katalog produk dan tabel inventaris toko. *(Selesai: `StatusBadge` & warning badges active)*
+- [x] **Task 3.6**: Stock Movement History View
+  - Tampilkan riwayat pergerakan stok (Purchase, Sale, Transfer, Adjustment) dengan filter jenis movement dan tanggal. *(Selesai: Tab Histori Stock Movements diselesaikan)*
 
 ---
 

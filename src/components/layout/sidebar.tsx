@@ -9,6 +9,7 @@ import {
   Package,
   Boxes,
   Receipt,
+  Users,
   LogOut,
   X,
 } from 'lucide-react';
@@ -21,7 +22,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { isManager } = useAuth();
+  const { isManager, isOwner } = useAuth();
 
   const navItems = [
     {
@@ -53,6 +54,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: '/sales',
       icon: Receipt,
       show: true,
+    },
+    {
+      label: 'Manajemen Pegawai',
+      href: '/users',
+      icon: Users,
+      show: isOwner,
     },
   ];
 
