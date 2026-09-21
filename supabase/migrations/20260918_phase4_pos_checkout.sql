@@ -58,11 +58,9 @@ BEGIN
             RAISE EXCEPTION 'Harga satuan produk tidak valid';
         END IF;
 
-        -- Fetch Product Name & Current Inventory
-        SELECT p.name, COALESCE(i.quantity, 0)
-        INTO v_product_name, v_curr_stock
+        -- Fetch Product Name
+        SELECT p.name INTO v_product_name
         FROM products p
-        LEFT JOIN inventory i ON i.product_id = p.id AND i.store_id = p_store_id
         WHERE p.id = v_item.product_id;
 
         IF v_product_name IS NULL THEN
@@ -70,13 +68,16 @@ BEGIN
         END IF;
 
         -- Explicit Row-Level Locking on Inventory to prevent race conditions / concurrent checkout
-        PERFORM 1 
+        -- Mengunci baris inventaris toko dan membaca nilai stok terkini setelah lock diperoleh
+        v_curr_stock := 0;
+        SELECT COALESCE(quantity, 0)
+        INTO v_curr_stock
         FROM inventory 
         WHERE store_id = p_store_id AND product_id = v_item.product_id 
         FOR UPDATE;
 
-        IF v_curr_stock < v_item.quantity THEN
-            RAISE EXCEPTION 'Stok untuk produk "%" tidak mencukupi (Tersedia: %, Diminta: %)', v_product_name, v_curr_stock, v_item.quantity;
+        IF v_curr_stock IS NULL OR v_curr_stock < v_item.quantity THEN
+            RAISE EXCEPTION 'Stok untuk produk "%" tidak mencukupi (Tersedia: %, Diminta: %)', v_product_name, COALESCE(v_curr_stock, 0), v_item.quantity;
         END IF;
 
         v_total_amount := v_total_amount + (v_item.unit_price * v_item.quantity);
@@ -154,7 +155,7 @@ BEGIN
         'created_at', now()
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 
 -- ============================================================================
@@ -167,32 +168,41 @@ DECLARE
     v_receipt JSONB;
 BEGIN
     SELECT jsonb_build_object(
-        'sale_id', s.id,
-        'transaction_number', s.transaction_number,
-        'created_at', s.created_at,
-        'status', s.status,
-        'total_amount', s.total_amount,
+        'sale', jsonb_build_object(
+            'id', s.id,
+            'transaction_number', s.transaction_number,
+            'store_id', s.store_id,
+            'store_name', st.name,
+            'cashier_id', s.cashier_id,
+            'cashier_name', COALESCE(p.full_name, 'Kasir POS'),
+            'total_amount', s.total_amount,
+            'payment_method', COALESCE(pay.payment_method, s.payment_method),
+            'status', s.status,
+            'notes', s.notes,
+            'created_at', s.created_at
+        ),
         'store', jsonb_build_object(
             'id', st.id,
             'name', st.name,
             'address', st.address,
-            'phone', st.phone
+            'phone', st.phone,
+            'code', st.code
         ),
-        'cashier', jsonb_build_object(
-            'id', s.cashier_id,
-            'full_name', COALESCE(p.full_name, 'Kasir POS')
-        ),
+        'cashier_name', COALESCE(p.full_name, 'Kasir POS'),
         'payment', jsonb_build_object(
-            'method', pay.payment_method,
-            'amount_paid', pay.amount_paid,
-            'amount_change', pay.amount_change,
-            'status', pay.payment_status,
-            'created_at', pay.created_at
+            'id', COALESCE(pay.id, s.id),
+            'sale_id', s.id,
+            'payment_method', COALESCE(pay.payment_method, s.payment_method),
+            'amount_paid', COALESCE(pay.amount_paid, s.total_amount),
+            'amount_change', COALESCE(pay.amount_change, 0),
+            'payment_status', COALESCE(pay.payment_status, 'COMPLETED'),
+            'created_at', COALESCE(pay.created_at, s.created_at)
         ),
         'items', COALESCE((
             SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', si.id,
+                    'sale_id', si.sale_id,
                     'product_id', si.product_id,
                     'product_name', pr.name,
                     'unit_price', si.unit_price,
@@ -203,7 +213,17 @@ BEGIN
             FROM sale_items si
             JOIN products pr ON pr.id = si.product_id
             WHERE si.sale_id = s.id
-        ), '[]'::jsonb)
+        ), '[]'::jsonb),
+        -- Flat aliases for backward compatibility
+        'sale_id', s.id,
+        'transaction_number', s.transaction_number,
+        'created_at', s.created_at,
+        'status', s.status,
+        'total_amount', s.total_amount,
+        'cashier', jsonb_build_object(
+            'id', s.cashier_id,
+            'full_name', COALESCE(p.full_name, 'Kasir POS')
+        )
     ) INTO v_receipt
     FROM sales s
     JOIN stores st ON st.id = s.store_id
@@ -217,4 +237,4 @@ BEGIN
 
     RETURN v_receipt;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
