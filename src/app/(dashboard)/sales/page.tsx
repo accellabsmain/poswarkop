@@ -6,7 +6,8 @@ import { StorageService } from '@/lib/storage-service';
 import { Sale, SaleReceiptData } from '@/types';
 import { StatusBadge } from '@/components/ui/badge';
 import { ReceiptModal } from '@/components/pos/receipt-modal';
-import { Receipt, Search, Printer } from 'lucide-react';
+import { Receipt, Search, Printer, Download } from 'lucide-react';
+import { exportSalesToCSV } from '@/lib/export-utils';
 
 export default function SalesHistoryPage() {
   const { activeStore } = useStore();
@@ -36,6 +37,10 @@ export default function SalesHistoryPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    exportSalesToCSV(sales, activeStore.name);
+  };
+
   const filteredSales = sales.filter((s) => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
@@ -62,6 +67,14 @@ export default function SalesHistoryPage() {
             Daftar seluruh transaksi yang terjadi di toko {activeStore.name}.
           </p>
         </div>
+
+        <button
+          onClick={handleExportCSV}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+        >
+          <Download className="h-4 w-4" />
+          <span>Ekspor Penjualan (CSV)</span>
+        </button>
       </div>
 
       {/* Search Bar */}

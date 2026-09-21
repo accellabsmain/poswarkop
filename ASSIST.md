@@ -76,7 +76,7 @@ Berikut adalah 4 poin krusial yang saat ini **belum ada/masih mock** dan wajib d
 | **Phase 1** | Existing Baseline | Arsitektur Dasar, Database Schema & Mock Service | Team | ✅ Completed |
 | **Phase 2** | RBAC & Authentication | Auth Supabase, RLS Policies, Navigation & Store Guard | Lintang & Nares | 🔄 In Progress |
 | **Phase 3** | Inventory & Stock Transfer | Isolasi Stok Toko, Transfer Stock RPC Function & UI Modal | Lintang & Nares | ⏳ Planned |
-| **Phase 4** | POS Checkout & Payment | RPC Atomic Checkout, Cart UX, Struk & Payment | Lintang & Nares | ⏳ Planned |
+| **Phase 4** | POS Checkout & Payment | RPC Atomic Checkout, Cart UX, Struk & Payment | Lintang & Nares | ✅ Completed |
 | **Phase 5** | Owner Dashboard & Admin | Server Action User Management, Multi-store Analytics | Lintang & Nares | ⏳ Planned |
 | **Phase 6** | QA, Optimization & Launch | Integration Testing, RLS Security Audit, Performance & Deploy | Team | ⏳ Planned |
 
@@ -106,14 +106,14 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Sediakan helper server-side Next.js (`@supabase/ssr`) untuk mengecek role user saat ini. *(Selesai: `src/lib/supabase/server-auth.ts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 2.4**: Integration Login Page & Session State
-  - Hubungkan form login di `/login` ke Supabase Auth (`supabase.auth.signInWithPassword`) & perbarui `StoreContext` dengan data profil user yang aktif.
-- [ ] **Task 2.5**: Dynamic Sidebar & Route Guard per Role
+- [x] **Task 2.4**: Integration Login Page & Session State
+  - Hubungkan form login di `/login` ke Supabase Auth (`supabase.auth.signInWithPassword`) & perbarui `StoreContext` dengan data profil user yang aktif. *(Selesai: Form Login & Session State terhubung)*
+- [x] **Task 2.5**: Dynamic Sidebar & Route Guard per Role
   - Sembunyikan menu *Produk*, *Laporan*, dan *Manajemen User* jika user yang login adalah **Kasir**.
   - Sembunyikan/Disable tombol *Edit Produk*, *Hapus Produk*, dan *Adjust Stok* jika role adalah **Kasir**.
-  - Buat komponen HOC / Guard untuk meredirect Kasir jika mencoba membuka URL `/products` secara manual.
-- [ ] **Task 2.6**: Store Switcher Locking
-  - Kasir/Manager hanya dapat memilih toko yang terdaftar di tabel `user_stores` miliknya. Role `owner` dapat memilih semua toko.
+  - Buat komponen HOC / Guard untuk meredirect Kasir jika mencoba membuka URL `/products` secara manual. *(Selesai: Sidebar RBAC & Route Guard diselesaikan)*
+- [x] **Task 2.6**: Store Switcher Locking
+  - Kasir/Manager hanya dapat memilih toko yang terdaftar di tabel `user_stores` miliknya. Role `owner` dapat memilih semua toko. *(Selesai: Store switcher filtered by user.stores)*
 
 ---
 
@@ -130,12 +130,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Buat query/view RPC untuk mendapatkan daftar produk yang stoknya di bawah `minimum_stock` per toko. *(Selesai: RPC `get_low_stock_products()` & view `view_low_stock_alerts`)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 3.4**: Inter-Store Transfer UI Modal
-  - Buat modal form transaksi transfer: pilih produk, toko tujuan, jumlah transfer, dan panggil `supabase.rpc('transfer_store_stock', ...)`.
-- [ ] **Task 3.5**: Low Stock Warning Badge & Indicator
-  - Tampilkan badge indikator stok menipis pada katalog produk dan tabel inventaris toko.
-- [ ] **Task 3.6**: Stock Movement History View
-  - Tampilkan riwayat pergerakan stok (Purchase, Sale, Transfer, Adjustment) dengan filter jenis movement dan tanggal.
+- [x] **Task 3.4**: Inter-Store Transfer UI Modal
+  - Buat modal form transaksi transfer: pilih produk, toko tujuan, jumlah transfer, dan panggil `supabase.rpc('transfer_store_stock', ...)`. *(Selesai: `StockTransferModal` diselesaikan)*
+- [x] **Task 3.5**: Low Stock Warning Badge & Indicator
+  - Tampilkan badge indikator stok menipis pada katalog produk dan tabel inventaris toko. *(Selesai: `StatusBadge` & warning badges active)*
+- [x] **Task 3.6**: Stock Movement History View
+  - Tampilkan riwayat pergerakan stok (Purchase, Sale, Transfer, Adjustment) dengan filter jenis movement dan tanggal. *(Selesai: Tab Histori Stock Movements diselesaikan)*
 
 ---
 
@@ -144,20 +144,20 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Memberikan pengalaman kasir fast-checkout yang cepat via Supabase RPC `process_sale_transaction()`, serta pencetakan struk.
 
 ### 🛠️ Backend Tasks — [ 👤 Lintang ]
-- [ ] **Task 4.1**: RPC Function `process_sale_transaction()` Optimization
-  - Uji ketahanan fungsi atomic checkout: pembuatan `sales`, `sale_items` (penyimpanan harga historis), pemotongan stok, dan log pembayaran dalam 1 transaksi DB.
-- [ ] **Task 4.2**: Receipt Data Query Function
-  - Sediakan fungsi query/view berkinerja tinggi untuk mengambil detail struk lengkap (`sale`, `store`, `items`, `payment`, `cashier_name`) berdasarkan `sale_id`.
-- [ ] **Task 4.3**: Payment Validation Logic di RPC
-  - Tambahkan validasi pecahan kembalian uang tunai (Cash) dan penanganan transaksi non-tunai (QRIS / Transfer) langsung di dalam stored procedure.
+- [x] **Task 4.1**: RPC Function `process_sale_transaction()` Optimization
+  - Uji ketahanan fungsi atomic checkout: pembuatan `sales`, `sale_items` (penyimpanan harga historis), pemotongan stok dengan row locking (`FOR UPDATE`), dan log pembayaran dalam 1 transaksi DB. *(Selesai: RPC `process_sale_transaction()` with FOR UPDATE locking)*
+- [x] **Task 4.2**: Receipt Data Query Function
+  - Sediakan fungsi query/view berkinerja tinggi untuk mengambil detail struk lengkap (`sale`, `store`, `items`, `payment`, `cashier_name`) berdasarkan `sale_id`. *(Selesai: RPC `get_receipt_details()` & TypeScript helper `getReceiptDetails()`)*
+- [x] **Task 4.3**: Payment Validation Logic di RPC
+  - Tambahkan validasi pecahan kembalian uang tunai (Cash) dan penanganan transaksi non-tunai (QRIS / Transfer) langsung di dalam stored procedure. *(Selesai: Validasi CASH & exact non-cash payment di PL/pgSQL)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 4.4**: Fast POS Checkout UX Refinement
-  - Optimalkan pencarian produk via keyboard (shortcut focus `/`), filter kategori cepat, dan penambahan quantity ke cart tanpa lag.
-- [ ] **Task 4.5**: Cart Drawer & Payment Modal UX
-  - Sempurnakan tampilan Cart Drawer: kalkulasi total, tombol pecahan uang cepat (Rp 10k, 20k, 50k, 100k, Uang Pas), dan panggil RPC `process_sale_transaction`.
-- [ ] **Task 4.6**: Thermal Receipt Preview & Printing
-  - Implementasikan modal pratinjau struk penjualan dan styling cetak CSS `@media print` untuk printer thermal.
+- [x] **Task 4.4**: Fast POS Checkout UX Refinement
+  - Optimalkan pencarian produk via keyboard (shortcut focus `/`), filter kategori cepat, dan penambahan quantity ke cart tanpa lag. *(Selesai: Shortcut `/`, `F2`, `Escape` & client-side filtering aktif)*
+- [x] **Task 4.5**: Cart Drawer & Payment Modal UX
+  - Sempurnakan tampilan Cart Drawer: kalkulasi total, tombol pecahan uang cepat (Rp 10k, 20k, 50k, 100k, Uang Pas), dan panggil RPC `process_sale_transaction`. *(Selesai: Cart drawer UX & quick cash payment modal selesai)*
+- [x] **Task 4.6**: Thermal Receipt Preview & Printing
+  - Implementasikan modal pratinjau struk penjualan dan styling cetak CSS `@media print` untuk printer thermal. *(Selesai: ReceiptModal & ReceiptPrint thermal formatting 80mm selesai)*
 
 ---
 
@@ -174,12 +174,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
   - Query log aktivitas sistem (`audit_logs`) untuk keperluan pengawasan aktivitas kasir & manager.
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
-- [ ] **Task 5.4**: User & Role Management Dashboard UI
-  - Tampilkan tabel seluruh staf, indikator role, serta modal untuk alokasi toko & ubah role.
-- [ ] **Task 5.5**: Multi-Store Analytics Summary Dashboard
-  - Tampilkan kartu KPI omset total bisnis vs per toko, grafik perbandingan penjualan toko, dan daftar produk terlaris.
-- [ ] **Task 5.6**: Export Report Feature (CSV / PDF)
-  - Fitur unduh laporan transaksi penjualan dan stok ke format CSV/PDF.
+- [x] **Task 5.4**: User & Role Management Dashboard UI
+  - Tampilkan tabel seluruh staf, indikator role, serta modal untuk alokasi toko & ubah role. *(Selesai: Employee management UI, role badges & store access modal selesai)*
+- [x] **Task 5.5**: Multi-Store Analytics Summary Dashboard
+  - Tampilkan kartu KPI omset total bisnis vs per toko, grafik perbandingan penjualan toko, dan daftar produk terlaris. *(Selesai: Multi-store dashboard, KPI cards, revenue comparison bars & top products ranking)*
+- [x] **Task 5.6**: Export Report Feature (CSV / PDF)
+  - Fitur unduh laporan transaksi penjualan dan stok ke format CSV/PDF. *(Selesai: Utility export CSV untuk Penjualan, Dashboard, dan Inventaris aktif)*
 
 ---
 

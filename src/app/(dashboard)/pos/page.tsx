@@ -123,6 +123,39 @@ export default function PosPage() {
 
   const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Keyboard Shortcuts: '/' to focus search, 'Escape' to clear/blur, 'F2' to checkout
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing inside input or textarea except Escape
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === 'Escape') {
+        if (isCheckoutOpen) {
+          setIsCheckoutOpen(false);
+        } else if (isReceiptOpen) {
+          setIsReceiptOpen(false);
+        } else if (searchQuery) {
+          setSearchQuery('');
+          searchInputRef.current?.blur();
+        }
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        if (cart.length > 0 && !isCheckoutOpen) {
+          setIsCheckoutOpen(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart.length, isCheckoutOpen, isReceiptOpen, searchQuery]);
+
   return (
     <div className="space-y-4">
       {/* Mobile Tab Switcher */}
@@ -150,6 +183,33 @@ export default function PosPage() {
         </button>
       </div>
 
+      {/* Keyboard Shortcut Banner */}
+      <div className="hidden sm:flex items-center justify-between rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 px-4 py-2 text-xs text-indigo-700 dark:text-indigo-300">
+        <div className="flex items-center gap-4">
+          <span className="font-extrabold flex items-center gap-1">
+            ⚡ Shortcut Kasir Cepat:
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+              /
+            </kbd>{' '}
+            Fokus Cari Produk
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+              F2
+            </kbd>{' '}
+            Bayar & Checkout
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+              Esc
+            </kbd>{' '}
+            Reset / Tutup Modal
+          </span>
+        </div>
+      </div>
+
       {/* Main Grid: Products Left (2 col), Cart Right (1 col) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* PRODUCTS CATALOG SECTION */}
@@ -164,16 +224,20 @@ export default function PosPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari produk berdasarkan nama, SKU, atau barcode..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  placeholder="Cari produk berdasarkan nama, SKU, atau barcode... (Tekan '/')"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-12 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
+                <span className="absolute right-3 top-2.5 hidden sm:inline-block rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-400">
+                  /
+                </span>
               </div>
               <button
                 onClick={loadData}
-                className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Refresh Stok"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -267,3 +331,4 @@ export default function PosPage() {
     </div>
   );
 }
+
