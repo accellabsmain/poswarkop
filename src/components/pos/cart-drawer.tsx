@@ -129,9 +129,12 @@ export function CartDrawer({
         <button
           onClick={onOpenCheckout}
           disabled={cart.length === 0}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.99] disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none transition-all"
+          className="w-full flex items-center justify-between px-4 rounded-xl bg-indigo-600 py-3 text-sm font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.99] disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none transition-all"
         >
           <span>Bayar & Checkout</span>
+          <span className="rounded bg-indigo-500/80 px-2 py-0.5 text-[11px] font-mono font-bold text-indigo-100">
+            F2
+          </span>
         </button>
       </div>
     </div>

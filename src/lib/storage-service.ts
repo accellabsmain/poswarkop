@@ -92,6 +92,34 @@ export const StorageService = {
     return stores.find((s) => s.id === activeId) || stores[0];
   },
 
+  saveProfile(profile: Omit<UserProfile, 'id'> & { id?: string }): UserProfile {
+    const profiles = this.getProfiles();
+    if (profile.id) {
+      const idx = profiles.findIndex((p) => p.id === profile.id);
+      if (idx >= 0) {
+        profiles[idx] = { ...profiles[idx], ...profile };
+        setStoredData(STORAGE_KEYS.PROFILES, profiles);
+        return profiles[idx];
+      }
+    }
+    const newProfile: UserProfile = {
+      id: `user-${Date.now()}`,
+      full_name: profile.full_name,
+      role: profile.role,
+      stores: profile.stores || [],
+      created_at: new Date().toISOString(),
+    };
+    profiles.push(newProfile);
+    setStoredData(STORAGE_KEYS.PROFILES, profiles);
+    return newProfile;
+  },
+
+  deleteProfile(id: string): void {
+    const profiles = this.getProfiles();
+    const filtered = profiles.filter((p) => p.id !== id);
+    setStoredData(STORAGE_KEYS.PROFILES, filtered);
+  },
+
   // --- CATEGORIES ---
   getCategories(): Category[] {
     return getStoredData<Category[]>(STORAGE_KEYS.CATEGORIES, INITIAL_CATEGORIES);
@@ -277,6 +305,93 @@ export const StorageService = {
     }
 
     return updatedItem;
+  },
+
+  // Inter-Store Stock Transfer
+  transferStock(params: {
+    fromStoreId: string;
+    toStoreId: string;
+    productId: string;
+    quantity: number;
+    notes?: string;
+    userId?: string;
+  }): void {
+    if (params.quantity <= 0) {
+      throw new Error('Jumlah transfer harus lebih dari 0.');
+    }
+    if (params.fromStoreId === params.toStoreId) {
+      throw new Error('Toko tujuan tidak boleh sama dengan toko asal.');
+    }
+
+    const inventory = this.getInventoryAll();
+    const fromIdx = inventory.findIndex(
+      (i) => i.store_id === params.fromStoreId && i.product_id === params.productId
+    );
+    const availableQty = fromIdx >= 0 ? inventory[fromIdx].quantity : 0;
+
+    if (availableQty < params.quantity) {
+      throw new Error(
+        `Stok di toko asal tidak mencukupi! (Tersedia: ${availableQty}, Diminta: ${params.quantity})`
+      );
+    }
+
+    // Deduct from source store
+    inventory[fromIdx].quantity -= params.quantity;
+    inventory[fromIdx].updated_at = new Date().toISOString();
+
+    // Add to target store
+    const toIdx = inventory.findIndex(
+      (i) => i.store_id === params.toStoreId && i.product_id === params.productId
+    );
+    if (toIdx >= 0) {
+      inventory[toIdx].quantity += params.quantity;
+      inventory[toIdx].updated_at = new Date().toISOString();
+    } else {
+      inventory.push({
+        id: `inv-${params.toStoreId}-${params.productId}`,
+        store_id: params.toStoreId,
+        product_id: params.productId,
+        quantity: params.quantity,
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    setStoredData(STORAGE_KEYS.INVENTORY, inventory);
+
+    // Record 2 audit movements: TRANSFER_OUT & TRANSFER_IN
+    const products = this.getProducts();
+    const stores = this.getStores();
+    const prod = products.find((p) => p.id === params.productId);
+    const fromStore = stores.find((s) => s.id === params.fromStoreId);
+    const toStore = stores.find((s) => s.id === params.toStoreId);
+    const user = this.getCurrentUser();
+    const refId = `trf-${Date.now()}`;
+
+    this.addStockMovement({
+      product_id: params.productId,
+      product_name: prod?.name || 'Unknown Product',
+      store_id: params.fromStoreId,
+      store_name: fromStore?.name || 'Unknown Store',
+      type: 'TRANSFER_OUT',
+      quantity: -params.quantity,
+      reference_id: refId,
+      notes: params.notes || `Transfer stok ke ${toStore?.name}`,
+      user_id: params.userId || user.id,
+      user_name: user.full_name,
+    });
+
+    this.addStockMovement({
+      product_id: params.productId,
+      product_name: prod?.name || 'Unknown Product',
+      store_id: params.toStoreId,
+      store_name: toStore?.name || 'Unknown Store',
+      type: 'TRANSFER_IN',
+      quantity: params.quantity,
+      reference_id: refId,
+      notes: params.notes || `Transfer stok dari ${fromStore?.name}`,
+      user_id: params.userId || user.id,
+      user_name: user.full_name,
+    });
   },
 
   // --- STOCK MOVEMENTS ---

@@ -285,6 +285,20 @@ export async function processSale(params: {
   return data;
 }
 
+// 7.1 GET RECEIPT DETAILS (Memanggil RPC get_receipt_details - Phase 4 Task 4.2)
+export async function getReceiptDetails(saleId: string) {
+  const { data, error } = await supabase.rpc('get_receipt_details', {
+    p_sale_id: saleId,
+  });
+
+  if (error) {
+    console.error('Error fetching receipt details:', error.message);
+    throw error;
+  }
+
+  return data;
+}
+
 // 8. SALES HISTORY
 export async function getSales(storeId?: string): Promise<Sale[]> {
   let query = supabase

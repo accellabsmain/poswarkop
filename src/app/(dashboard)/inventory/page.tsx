@@ -7,7 +7,9 @@ import { StorageService } from '@/lib/storage-service';
 import { InventoryItem, Product } from '@/types';
 import { StatusBadge } from '@/components/ui/badge';
 import { StockAdjustModal } from '@/components/inventory/stock-adjust-modal';
-import { Boxes, Sliders, History, Search, RefreshCw } from 'lucide-react';
+import { StockTransferModal } from '@/components/inventory/stock-transfer-modal';
+import { Boxes, Sliders, History, Search, RefreshCw, ArrowRightLeft, Download } from 'lucide-react';
+import { exportInventoryToCSV } from '@/lib/export-utils';
 
 export default function InventoryPage() {
   const { activeStore } = useStore();
@@ -30,6 +32,7 @@ export default function InventoryPage() {
     (InventoryItem & { product: Product }) | null
   >(null);
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const loadData = useCallback(() => {
     setData(getInventoryData());
@@ -39,6 +42,10 @@ export default function InventoryPage() {
   React.useEffect(() => {
     setData(getInventoryData());
   }, [getInventoryData]);
+
+  const handleExportCSV = () => {
+    exportInventoryToCSV(data.inventory, activeStore.name);
+  };
 
   const handleOpenAdjust = (item: InventoryItem & { product: Product }) => {
     setSelectedItem(item);
@@ -71,13 +78,33 @@ export default function InventoryPage() {
           </p>
         </div>
 
-        <button
-          onClick={loadData}
-          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span>Refresh Data</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+          >
+            <Download className="h-4 w-4" />
+            <span>Ekspor Stok (CSV)</span>
+          </button>
+
+          {isManager && (
+            <button
+              onClick={() => setIsTransferOpen(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-extrabold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300 transition-all"
+            >
+              <ArrowRightLeft className="h-4 w-4" />
+              <span>Transfer Stok Antar Toko</span>
+            </button>
+          )}
+
+          <button
+            onClick={loadData}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Refresh Data</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -264,6 +291,14 @@ export default function InventoryPage() {
         isOpen={isAdjustOpen}
         item={selectedItem}
         onClose={() => setIsAdjustOpen(false)}
+        onSuccess={loadData}
+      />
+
+      {/* Stock Transfer Modal */}
+      <StockTransferModal
+        isOpen={isTransferOpen}
+        currentStoreId={activeStore.id}
+        onClose={() => setIsTransferOpen(false)}
         onSuccess={loadData}
       />
     </div>

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { StorageService } from '@/lib/storage-service';
-import { ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, ArrowRight, ShieldCheck, UserPlus } from 'lucide-react';
 
 export function LoginPage() {
   const router = useRouter();
@@ -83,7 +84,19 @@ export function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+        {/* Link to Register Page */}
+        <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+          Belum memiliki akun?{' '}
+          <Link
+            href="/register"
+            className="font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 underline underline-offset-2 inline-flex items-center gap-1"
+          >
+            <span>Daftar Akun Baru</span>
+            <UserPlus className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
           <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
             <span>Terproteksi Supabase Auth & RLS Access Control</span>

@@ -5,10 +5,24 @@ import { StorageService } from '@/lib/storage-service';
 import { Product } from '@/types';
 import { ProductModal } from '@/components/products/product-modal';
 import { useAuth } from '@/context/auth-context';
-import { Search, Plus, Edit, Package, Layers } from 'lucide-react';
+import { Search, Plus, Edit, Package, Layers, ShieldAlert } from 'lucide-react';
 
 export default function ProductsPage() {
   const { isManager } = useAuth();
+
+  if (!isManager) {
+    return (
+      <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 mb-4">
+          <ShieldAlert className="h-8 w-8" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Akses Dibatasi</h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-md">
+          Halaman Katalog Produk hanya dapat diakses oleh role <strong>Manager</strong> atau <strong>Owner</strong>.
+        </p>
+      </div>
+    );
+  }
 
   const getProductsData = useCallback(() => {
     return {
