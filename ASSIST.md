@@ -76,7 +76,7 @@ Berikut adalah 4 poin krusial yang saat ini **belum ada/masih mock** dan wajib d
 | **Phase 1** | Existing Baseline | Arsitektur Dasar, Database Schema & Mock Service | Team | ✅ Completed |
 | **Phase 2** | RBAC & Authentication | Auth Supabase, RLS Policies, Navigation & Store Guard | Lintang & Nares | 🔄 In Progress |
 | **Phase 3** | Inventory & Stock Transfer | Isolasi Stok Toko, Transfer Stock RPC Function & UI Modal | Lintang & Nares | ⏳ Planned |
-| **Phase 4** | POS Checkout & Payment | RPC Atomic Checkout, Cart UX, Struk & Payment | Lintang & Nares | ⏳ Planned |
+| **Phase 4** | POS Checkout & Payment | RPC Atomic Checkout, Cart UX, Struk & Payment | Lintang & Nares | ✅ Completed |
 | **Phase 5** | Owner Dashboard & Admin | Server Action User Management, Multi-store Analytics | Lintang & Nares | ⏳ Planned |
 | **Phase 6** | QA, Optimization & Launch | Integration Testing, RLS Security Audit, Performance & Deploy | Team | ⏳ Planned |
 
@@ -144,12 +144,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Memberikan pengalaman kasir fast-checkout yang cepat via Supabase RPC `process_sale_transaction()`, serta pencetakan struk.
 
 ### 🛠️ Backend Tasks — [ 👤 Lintang ]
-- [ ] **Task 4.1**: RPC Function `process_sale_transaction()` Optimization
-  - Uji ketahanan fungsi atomic checkout: pembuatan `sales`, `sale_items` (penyimpanan harga historis), pemotongan stok, dan log pembayaran dalam 1 transaksi DB.
-- [ ] **Task 4.2**: Receipt Data Query Function
-  - Sediakan fungsi query/view berkinerja tinggi untuk mengambil detail struk lengkap (`sale`, `store`, `items`, `payment`, `cashier_name`) berdasarkan `sale_id`.
-- [ ] **Task 4.3**: Payment Validation Logic di RPC
-  - Tambahkan validasi pecahan kembalian uang tunai (Cash) dan penanganan transaksi non-tunai (QRIS / Transfer) langsung di dalam stored procedure.
+- [x] **Task 4.1**: RPC Function `process_sale_transaction()` Optimization
+  - Uji ketahanan fungsi atomic checkout: pembuatan `sales`, `sale_items` (penyimpanan harga historis), pemotongan stok dengan row locking (`FOR UPDATE`), dan log pembayaran dalam 1 transaksi DB. *(Selesai: RPC `process_sale_transaction()` with FOR UPDATE locking)*
+- [x] **Task 4.2**: Receipt Data Query Function
+  - Sediakan fungsi query/view berkinerja tinggi untuk mengambil detail struk lengkap (`sale`, `store`, `items`, `payment`, `cashier_name`) berdasarkan `sale_id`. *(Selesai: RPC `get_receipt_details()` & TypeScript helper `getReceiptDetails()`)*
+- [x] **Task 4.3**: Payment Validation Logic di RPC
+  - Tambahkan validasi pecahan kembalian uang tunai (Cash) dan penanganan transaksi non-tunai (QRIS / Transfer) langsung di dalam stored procedure. *(Selesai: Validasi CASH & exact non-cash payment di PL/pgSQL)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
 - [x] **Task 4.4**: Fast POS Checkout UX Refinement
