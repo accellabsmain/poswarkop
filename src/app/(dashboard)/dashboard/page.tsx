@@ -7,7 +7,7 @@ import { useAuth } from '@/context/auth-context';
 import { StorageService } from '@/lib/storage-service';
 import { StatusBadge } from '@/components/ui/badge';
 import { exportSalesToCSV } from '@/lib/export-utils';
-import { Store, Sale } from '@/types';
+import { Store } from '@/types';
 import {
   Banknote,
   Receipt,
@@ -25,7 +25,7 @@ import {
 
 export default function DashboardPage() {
   const { activeStore } = useStore();
-  const { user, isOwner } = useAuth();
+  const { user } = useAuth();
 
   const stores: Store[] = StorageService.getStores();
   const [selectedFilterStoreId, setSelectedFilterStoreId] = useState<string>('all');
@@ -134,7 +134,6 @@ export default function DashboardPage() {
     storeBreakdown,
     grandTotalRevenue,
     lowStockItems,
-    allProductsCount,
   } = data;
 
   const handleExportCSV = () => {
@@ -147,16 +146,16 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 p-6 text-white shadow-xl">
+      {/* Top Marketing Hero Banner - Meta Ink Deep Background */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 rounded-3xl bg-[#0a1317] p-8 text-white shadow-xl">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-700/60 px-3 py-1 text-xs font-bold text-indigo-200 backdrop-blur mb-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-white mb-3 backdrop-blur">
             Toko Aktif: {activeStore.name} ({activeStore.code})
           </span>
-          <h1 className="text-2xl font-black tracking-tight">
+          <h1 className="text-3xl font-black tracking-tight text-white">
             Selamat Datang, {user.full_name}!
           </h1>
-          <p className="text-xs text-indigo-200 mt-1 max-w-xl">
+          <p className="text-sm font-medium text-[#dee3e9] mt-2 max-w-xl">
             Ringkasan Performa Bisnis & Penjualan Multi-Toko (Toko Mas Budi, Warkop Ngombeku & Warkop Kakak).
           </p>
         </div>
@@ -164,7 +163,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 rounded-xl bg-indigo-700/80 hover:bg-indigo-700 px-4 py-3 text-xs font-bold text-white backdrop-blur border border-indigo-500/30 shadow-md transition-all active:scale-95"
+            className="flex items-center gap-2 rounded-full border-2 border-white/20 hover:border-white bg-transparent px-5 py-3 text-xs font-extrabold text-white transition-all active:scale-98"
           >
             <Download className="h-4 w-4" />
             <span>Ekspor Laporan (CSV)</span>
@@ -172,30 +171,30 @@ export default function DashboardPage() {
 
           <Link
             href="/pos"
-            className="flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-indigo-900 shadow-md hover:bg-indigo-50 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 rounded-full bg-[#0064e0] hover:bg-[#0457cb] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#0064e0]/30 transition-all active:scale-98"
           >
-            <ShoppingCart className="h-5 w-5 text-indigo-600" />
+            <ShoppingCart className="h-4 w-4" />
             <span>Buka POS Kasir</span>
           </Link>
         </div>
       </div>
 
       {/* Multi-Store Scope Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-        <div className="flex items-center gap-2">
-          <StoreIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-            Scope Ringkasan Data:
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <StoreIcon className="h-5 w-5 text-[#0064e0]" />
+          <span className="text-xs font-extrabold uppercase tracking-wider text-[#0a1317]">
+            Scope Data Ringkasan:
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setSelectedFilterStoreId('all')}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
               selectedFilterStoreId === 'all'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                ? 'bg-[#0a1317] text-white shadow-sm'
+                : 'bg-[#f1f4f7] text-[#1c1e21] border border-[#dee3e9] hover:bg-white'
             }`}
           >
             Semua Toko (Aggregated)
@@ -204,10 +203,10 @@ export default function DashboardPage() {
             <button
               key={s.id}
               onClick={() => setSelectedFilterStoreId(s.id)}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
                 selectedFilterStoreId === s.id
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                  ? 'bg-[#0a1317] text-white shadow-sm'
+                  : 'bg-[#f1f4f7] text-[#1c1e21] border border-[#dee3e9] hover:bg-white'
               }`}
             >
               {s.name}
@@ -217,86 +216,86 @@ export default function DashboardPage() {
       </div>
 
       {/* 4 Primary KPI Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Total Omset */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#5d6c7b]">
               Total Omset Bisnis
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#31a24c]/10 text-[#31a24c]">
               <Banknote className="h-5 w-5" />
             </div>
           </div>
-          <p className="mt-3 text-2xl font-black text-slate-900 dark:text-white">
+          <p className="mt-4 text-2xl font-black text-[#0a1317]">
             Rp {totalRevenue.toLocaleString('id-ID')}
           </p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-[#5d6c7b] font-medium">
             {selectedFilterStoreId === 'all' ? 'Akumulasi seluruh toko' : 'Total omset toko terpilih'}
           </p>
         </div>
 
         {/* Card 2: Total Transactions */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#5d6c7b]">
               Total Transaksi
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0064e0]/10 text-[#0064e0]">
               <Receipt className="h-5 w-5" />
             </div>
           </div>
-          <p className="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-            {totalTransactions} <span className="text-sm font-semibold text-slate-400">penjualan</span>
+          <p className="mt-4 text-2xl font-black text-[#0a1317]">
+            {totalTransactions} <span className="text-sm font-bold text-[#5d6c7b]">penjualan</span>
           </p>
-          <p className="mt-1 text-xs text-slate-400">Riwayat checkout kasir</p>
+          <p className="mt-1 text-xs text-[#5d6c7b] font-medium">Riwayat checkout kasir</p>
         </div>
 
         {/* Card 3: Total Items Sold */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#5d6c7b]">
               Item Terjual
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7b928]/20 text-[#0a1317]">
               <Package className="h-5 w-5" />
             </div>
           </div>
-          <p className="mt-3 text-2xl font-black text-slate-900 dark:text-white">
-            {totalItemsSold} <span className="text-sm font-semibold text-slate-400">pcs</span>
+          <p className="mt-4 text-2xl font-black text-[#0a1317]">
+            {totalItemsSold} <span className="text-sm font-bold text-[#5d6c7b]">pcs</span>
           </p>
-          <p className="mt-1 text-xs text-slate-400">Kuantitas produk keluar</p>
+          <p className="mt-1 text-xs text-[#5d6c7b] font-medium">Kuantitas produk keluar</p>
         </div>
 
         {/* Card 4: Average Order Value */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Rata-rata Transaksi (Basket)
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#5d6c7b]">
+              Rata-rata Transaksi
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0a1317] text-white">
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
-          <p className="mt-3 text-2xl font-black text-slate-900 dark:text-white">
+          <p className="mt-4 text-2xl font-black text-[#0a1317]">
             Rp {averageOrderValue.toLocaleString('id-ID')}
           </p>
-          <p className="mt-1 text-xs text-slate-400">Nilai belanja per transaksi</p>
+          <p className="mt-1 text-xs text-[#5d6c7b] font-medium">Nilai belanja per transaksi</p>
         </div>
       </div>
 
       {/* Middle Section: Store Comparison & Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Multi-Store Revenue Comparison Bar */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm space-y-4">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2.5">
+              <PieChart className="h-5 w-5 text-[#0064e0]" />
+              <h2 className="text-lg font-black text-[#0a1317]">
                 Kontribusi Omset Per Toko
               </h2>
             </div>
-            <span className="text-xs text-slate-400 font-semibold">3 Toko Aktif</span>
+            <span className="text-xs text-[#5d6c7b] font-bold">3 Toko Aktif</span>
           </div>
 
           <div className="space-y-4 pt-2">
@@ -305,20 +304,20 @@ export default function DashboardPage() {
               return (
                 <div key={sb.store.id} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <StoreIcon className="h-3.5 w-3.5 text-indigo-500" />
+                    <span className="font-extrabold text-[#0a1317] flex items-center gap-1.5">
+                      <StoreIcon className="h-3.5 w-3.5 text-[#0064e0]" />
                       {sb.store.name} ({sb.store.code})
                     </span>
                     <div className="text-right">
-                      <span className="font-black text-indigo-600 dark:text-indigo-400">
+                      <span className="font-black text-[#0064e0]">
                         Rp {sb.revenue.toLocaleString('id-ID')}
                       </span>
-                      <span className="text-slate-400 font-semibold ml-2">({percent}%)</span>
+                      <span className="text-[#5d6c7b] font-bold ml-2">({percent}%)</span>
                     </div>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div className="h-3 w-full rounded-full bg-[#f1f4f7] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 transition-all duration-500"
+                      className="h-full rounded-full bg-[#0064e0] transition-all duration-500"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -329,45 +328,45 @@ export default function DashboardPage() {
         </div>
 
         {/* Top 5 Selling Products */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 shadow-sm space-y-4">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-amber-500" />
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2.5">
+              <Award className="h-5 w-5 text-[#f7b928]" />
+              <h2 className="text-lg font-black text-[#0a1317]">
                 Produk Terlaris (Top Selling)
               </h2>
             </div>
-            <span className="text-xs text-slate-400 font-semibold">Top 5 Item</span>
+            <span className="text-xs text-[#5d6c7b] font-bold">Top 5 Item</span>
           </div>
 
           <div className="space-y-3">
             {topProducts.length === 0 ? (
-              <p className="text-center py-6 text-xs text-slate-400">
+              <p className="text-center py-6 text-xs text-[#5d6c7b] font-bold">
                 Belum ada data penjualan produk.
               </p>
             ) : (
               topProducts.map((prod, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/40"
+                  className="flex items-center justify-between p-3.5 rounded-2xl border border-[#dee3e9] bg-[#f1f4f7]"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-950 font-black text-indigo-700 dark:text-indigo-300 text-xs">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0a1317] font-black text-white text-xs">
                       #{idx + 1}
                     </span>
                     <div>
-                      <p className="font-bold text-slate-900 dark:text-white text-xs">
+                      <p className="font-bold text-[#0a1317] text-xs">
                         {prod.name}
                       </p>
-                      <p className="text-[11px] text-slate-400">SKU: {prod.sku}</p>
+                      <p className="text-[11px] text-[#5d6c7b]">SKU: {prod.sku}</p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                    <p className="text-xs font-black text-[#0a1317]">
                       {prod.units} pcs terjual
                     </p>
-                    <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                    <p className="text-[11px] font-extrabold text-[#0064e0]">
                       Rp {prod.revenue.toLocaleString('id-ID')}
                     </p>
                   </div>
@@ -383,27 +382,27 @@ export default function DashboardPage() {
         {/* Low Stock Alerts */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-black text-[#0a1317] flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[#f7b928]" />
               <span>Peringatan Stok Menipis ({lowStockItems.length} produk)</span>
             </h2>
             <Link
               href="/inventory"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 flex items-center gap-1"
+              className="text-xs font-extrabold text-[#0064e0] hover:underline flex items-center gap-1"
             >
               <span>Kelola Stok</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm space-y-3">
+          <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm space-y-3">
             {lowStockItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400">
-                <Boxes className="h-10 w-10 stroke-[1.5] mb-2 text-emerald-500" />
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              <div className="flex flex-col items-center justify-center py-8 text-center text-[#5d6c7b]">
+                <Boxes className="h-10 w-10 stroke-[1.5] mb-2 text-[#31a24c]" />
+                <p className="text-sm font-bold text-[#0a1317]">
                   Stok Aman! Tidak Ada Produk Menipis
                 </p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-[#5d6c7b] mt-1">
                   Semua persediaan produk berada di atas batas minimum.
                 </p>
               </div>
@@ -411,23 +410,25 @@ export default function DashboardPage() {
               lowStockItems.slice(0, 6).map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/40"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] hover:bg-white transition-all"
                 >
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-white text-xs">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-[#0a1317] text-xs sm:text-sm">
                       {item.product.name}
                     </p>
-                    <p className="text-[11px] text-slate-400">
-                      SKU: {item.product.sku} | Min: {item.product.minimum_stock} {item.product.unit}
+                    <p className="text-[11px] text-[#5d6c7b] flex flex-wrap items-center gap-x-2">
+                      <span>SKU: <code className="font-mono font-bold text-[#0a1317]">{item.product.sku}</code></span>
+                      <span className="hidden sm:inline">•</span>
+                      <span>Min: <strong className="text-[#0a1317]">{item.product.minimum_stock} {item.product.unit}</strong></span>
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-[11px] text-slate-400">Stok Toko</p>
-                      <p className="text-xs font-extrabold text-amber-600 dark:text-amber-400">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2.5 sm:pt-0 border-t border-[#dee3e9] sm:border-t-0">
+                    <div className="text-left sm:text-right">
+                      <span className="text-[10px] uppercase font-bold text-[#8595a4] block sm:inline mr-1">Stok Toko:</span>
+                      <span className="text-xs font-black text-[#0a1317]">
                         {item.quantity} {item.product.unit}
-                      </p>
+                      </span>
                     </div>
                     <StatusBadge status={item.status} />
                   </div>
@@ -440,34 +441,34 @@ export default function DashboardPage() {
         {/* Recent Sales History */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-black text-[#0a1317]">
               Transaksi Terakhir
             </h2>
             <Link
               href="/sales"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 flex items-center gap-1"
+              className="text-xs font-extrabold text-[#0064e0] hover:underline flex items-center gap-1"
             >
               <span>Lihat Semua</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm space-y-3">
+          <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm space-y-3">
             {sales.length === 0 ? (
-              <p className="text-center py-6 text-xs text-slate-400">
+              <p className="text-center py-6 text-xs text-[#5d6c7b] font-bold">
                 Belum ada transaksi penjualan.
               </p>
             ) : (
               sales.slice(0, 5).map((sale) => (
                 <div
                   key={sale.id}
-                  className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 last:border-0 last:pb-0"
+                  className="flex items-center justify-between border-b border-[#dee3e9] pb-3 last:border-0 last:pb-0"
                 >
                   <div>
-                    <p className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                    <p className="font-bold text-xs text-[#0a1317]">
                       {sale.transaction_number}
                     </p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#5d6c7b]">
                       {new Date(sale.created_at).toLocaleTimeString('id-ID', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -475,7 +476,7 @@ export default function DashboardPage() {
                       • {sale.payment_method}
                     </p>
                   </div>
-                  <span className="font-extrabold text-xs text-indigo-600 dark:text-indigo-400">
+                  <span className="font-extrabold text-xs text-[#0064e0]">
                     Rp {sale.total_amount.toLocaleString('id-ID')}
                   </span>
                 </div>

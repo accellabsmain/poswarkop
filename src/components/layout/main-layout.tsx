@@ -16,10 +16,10 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
   if (!mounted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-white text-[#0a1317]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-xs font-medium text-slate-400">Memuat POS Warkop...</p>
+          <div className="h-9 w-9 animate-spin rounded-full border-4 border-[#0064e0] border-t-transparent" />
+          <p className="text-xs font-bold text-[#5d6c7b]">Memuat POS Warkop...</p>
         </div>
       </div>
     );
@@ -28,7 +28,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <StoreProvider>
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased">
+        <div className="flex min-h-screen bg-white font-sans text-[#0a1317] antialiased">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="flex flex-1 flex-col min-w-0">
             <Header onToggleSidebar={() => setSidebarOpen(true)} />

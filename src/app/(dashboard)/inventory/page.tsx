@@ -66,22 +66,22 @@ export default function InventoryPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 mb-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f1f4f7] border border-[#dee3e9] px-3.5 py-1 text-xs font-bold text-[#0a1317] mb-2">
             Toko: {activeStore.name} ({activeStore.code})
           </span>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <Boxes className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+          <h1 className="text-2xl font-black tracking-tight text-[#0a1317] flex items-center gap-2.5">
+            <Boxes className="h-7 w-7 text-[#0064e0]" />
             <span>Manajemen Stok & Inventory</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-[#5d6c7b] mt-1">
             Stok tersimpan terpisah per toko. Setiap perubahan menghasilkan catatan audit histori.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={handleExportCSV}
-            className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+            className="flex items-center justify-center gap-2 rounded-full bg-[#0a1317] hover:bg-[#1c1e21] px-5 py-2.5 text-xs font-extrabold text-white shadow-sm transition-all"
           >
             <Download className="h-4 w-4" />
             <span>Ekspor Stok (CSV)</span>
@@ -90,7 +90,7 @@ export default function InventoryPage() {
           {isManager && (
             <button
               onClick={() => setIsTransferOpen(true)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-extrabold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300 transition-all"
+              className="flex items-center justify-center gap-2 rounded-full bg-[#0064e0] hover:bg-[#0457cb] px-5 py-2.5 text-xs font-extrabold text-white shadow-md shadow-[#0064e0]/20 transition-all"
             >
               <ArrowRightLeft className="h-4 w-4" />
               <span>Transfer Stok Antar Toko</span>
@@ -99,7 +99,7 @@ export default function InventoryPage() {
 
           <button
             onClick={loadData}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            className="flex items-center justify-center gap-2 rounded-full border border-[#dee3e9] bg-[#f1f4f7] hover:bg-white px-4 py-2.5 text-xs font-bold text-[#0a1317] transition-all"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Refresh Data</span>
@@ -108,13 +108,13 @@ export default function InventoryPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800">
+      <div className="flex gap-2 border-b border-[#dee3e9] pb-3">
         <button
           onClick={() => setActiveTab('balance')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-extrabold transition-all ${
+          className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-extrabold transition-all ${
             activeTab === 'balance'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+              ? 'bg-[#0a1317] text-white shadow-sm'
+              : 'bg-white text-[#5d6c7b] border border-[#dee3e9] hover:bg-[#f1f4f7]'
           }`}
         >
           <Boxes className="h-4 w-4" />
@@ -123,10 +123,10 @@ export default function InventoryPage() {
 
         <button
           onClick={() => setActiveTab('movements')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-extrabold transition-all ${
+          className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-extrabold transition-all ${
             activeTab === 'movements'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+              ? 'bg-[#0a1317] text-white shadow-sm'
+              : 'bg-white text-[#5d6c7b] border border-[#dee3e9] hover:bg-[#f1f4f7]'
           }`}
         >
           <History className="h-4 w-4" />
@@ -138,33 +138,33 @@ export default function InventoryPage() {
       {activeTab === 'balance' && (
         <div className="space-y-4">
           <div className="relative">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-4 top-3.5 h-4 w-4 text-[#8595a4]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari produk di inventory toko ini..."
-              className="w-full max-w-md rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white shadow-sm"
+              className="w-full max-w-md rounded-full border border-[#dee3e9] bg-[#f1f4f7] pl-11 pr-4 py-2.5 text-sm font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all shadow-xs"
             />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+          <div className="rounded-3xl border border-[#dee3e9] bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 dark:border-slate-800">
+              <table className="w-full text-left text-sm text-[#1c1e21]">
+                <thead className="bg-[#f1f4f7] text-xs font-black uppercase tracking-wider text-[#0a1317] border-b border-[#dee3e9]">
                   <tr>
-                    <th className="px-4 py-3">Produk</th>
-                    <th className="px-4 py-3">SKU</th>
-                    <th className="px-4 py-3 text-center">Batas Min Stok</th>
-                    <th className="px-4 py-3 text-right">Stok Toko Saat Ini</th>
-                    <th className="px-4 py-3 text-center">Status Stok</th>
-                    <th className="px-4 py-3 text-right">Aksi Penyesuaian</th>
+                    <th className="px-5 py-4">Produk</th>
+                    <th className="px-5 py-4">SKU</th>
+                    <th className="px-5 py-4 text-center">Batas Min Stok</th>
+                    <th className="px-5 py-4 text-right">Stok Toko Saat Ini</th>
+                    <th className="px-5 py-4 text-center">Status Stok</th>
+                    <th className="px-5 py-4 text-right">Aksi Penyesuaian</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-[#dee3e9]">
                   {filteredInventory.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                      <td colSpan={6} className="py-10 text-center text-xs font-bold text-[#8595a4]">
                         Tidak ada data stok produk.
                       </td>
                     </tr>
@@ -172,35 +172,35 @@ export default function InventoryPage() {
                     filteredInventory.map((item) => (
                       <tr
                         key={item.id}
-                        className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                        className="hover:bg-[#f1f4f7]/70 transition-colors"
                       >
-                        <td className="px-4 py-3">
-                          <p className="font-bold text-slate-900 dark:text-white">
+                        <td className="px-5 py-4">
+                          <p className="font-extrabold text-[#0a1317]">
                             {item.product.name}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs font-medium text-[#5d6c7b]">
                             {item.product.category_name || 'Umum'}
                           </p>
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                        <td className="px-5 py-4 font-mono text-xs font-bold text-[#0a1317]">
                           {item.product.sku}
                         </td>
-                        <td className="px-4 py-3 text-center font-semibold text-xs">
+                        <td className="px-5 py-4 text-center font-bold text-xs text-[#0a1317]">
                           {item.product.minimum_stock} {item.product.unit}
                         </td>
-                        <td className="px-4 py-3 text-right font-black text-base text-slate-900 dark:text-white">
+                        <td className="px-5 py-4 text-right font-black text-base text-[#0a1317]">
                           {item.quantity} {item.product.unit}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-5 py-4 text-center">
                           <StatusBadge status={item.status} />
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-5 py-4 text-right">
                           {isManager && (
                             <button
                               onClick={() => handleOpenAdjust(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-[#dee3e9] bg-[#f1f4f7] hover:bg-white px-3.5 py-1.5 text-xs font-extrabold text-[#0a1317] transition-all"
                             >
-                              <Sliders className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                              <Sliders className="h-3.5 w-3.5 text-[#0064e0]" />
                               <span>Adjust Stok</span>
                             </button>
                           )}
@@ -217,64 +217,64 @@ export default function InventoryPage() {
 
       {/* TAB 2: STOCK MOVEMENTS AUDIT LOG */}
       {activeTab === 'movements' && (
-        <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 dark:border-slate-800">
+            <table className="w-full text-left text-sm text-[#1c1e21]">
+              <thead className="bg-[#f1f4f7] text-xs font-black uppercase tracking-wider text-[#0a1317] border-b border-[#dee3e9]">
                 <tr>
-                  <th className="px-4 py-3">Tanggal / Waktu</th>
-                  <th className="px-4 py-3">Produk</th>
-                  <th className="px-4 py-3 text-center">Tipe Aktivitas</th>
-                  <th className="px-4 py-3 text-right">Jumlah Perubahan</th>
-                  <th className="px-4 py-3">Catatan / Keterangan</th>
-                  <th className="px-4 py-3">Petugas</th>
+                  <th className="px-5 py-4">Tanggal / Waktu</th>
+                  <th className="px-5 py-4">Produk</th>
+                  <th className="px-5 py-4 text-center">Tipe Aktivitas</th>
+                  <th className="px-5 py-4 text-right">Jumlah Perubahan</th>
+                  <th className="px-5 py-4">Catatan / Keterangan</th>
+                  <th className="px-5 py-4">Petugas</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#dee3e9]">
                 {data.movements.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                    <td colSpan={6} className="py-10 text-center text-xs font-bold text-[#8595a4]">
                       Belum ada histori gerakan stok di toko ini.
                     </td>
                   </tr>
                 ) : (
                   data.movements.map((mov) => (
-                    <tr key={mov.id} className="hover:bg-slate-50/50">
-                      <td className="px-4 py-3 text-xs font-medium text-slate-500">
+                    <tr key={mov.id} className="hover:bg-[#f1f4f7]/70 transition-colors">
+                      <td className="px-5 py-4 text-xs font-medium text-[#5d6c7b]">
                         {new Date(mov.created_at).toLocaleString('id-ID', {
                           dateStyle: 'medium',
                           timeStyle: 'short',
                         })}
                       </td>
-                      <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
+                      <td className="px-5 py-4 font-extrabold text-[#0a1317]">
                         {mov.product_name}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-5 py-4 text-center">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
+                          className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-extrabold ${
                             mov.type === 'SALE'
-                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
+                              ? 'bg-[#e41e3f] text-white'
                               : mov.type === 'PURCHASE' || mov.type === 'TRANSFER_IN'
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
-                              : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                              ? 'bg-[#31a24c] text-white'
+                              : 'bg-[#f7b928] text-[#0a1317]'
                           }`}
                         >
                           {mov.type}
                         </span>
                       </td>
                       <td
-                        className={`px-4 py-3 text-right font-black ${
+                        className={`px-5 py-4 text-right font-black ${
                           mov.quantity > 0
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-rose-600 dark:text-rose-400'
+                            ? 'text-[#31a24c]'
+                            : 'text-[#e41e3f]'
                         }`}
                       >
                         {mov.quantity > 0 ? `+${mov.quantity}` : mov.quantity}
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                      <td className="px-5 py-4 text-xs font-medium text-[#5d6c7b]">
                         {mov.notes || '-'}
                       </td>
-                      <td className="px-4 py-3 text-xs font-semibold">
+                      <td className="px-5 py-4 text-xs font-bold text-[#0a1317]">
                         {mov.user_name || 'Sistem'}
                       </td>
                     </tr>

@@ -79,50 +79,50 @@ function StockAdjustForm({
   const diff = newQuantity - item.quantity;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1317]/50 p-4 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-[#dee3e9]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#dee3e9]">
           <div>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+            <h3 className="text-lg font-black text-[#0a1317]">
               Penyesuaian Stok (Adjustment)
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Toko: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{activeStore.name}</span>
+            <p className="text-xs font-semibold text-[#5d6c7b]">
+              Toko: <span className="font-extrabold text-[#0064e0]">{activeStore.name}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-full p-2 text-[#5d6c7b] hover:bg-[#f1f4f7] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700 dark:bg-rose-950/50 dark:border-rose-800 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-[#e41e3f]/10 border border-[#e41e3f]/20 p-3.5 text-xs font-bold text-[#e41e3f]">
+            <AlertCircle className="h-4 w-4 shrink-0 text-[#e41e3f]" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5 border border-slate-200 dark:border-slate-700">
-          <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
+        <div className="mt-4 rounded-2xl bg-[#f1f4f7] p-4 border border-[#dee3e9]">
+          <p className="text-[11px] font-extrabold text-[#5d6c7b] uppercase tracking-wider">
             {item.product.category_name || 'Produk'}
           </p>
-          <p className="text-base font-extrabold text-slate-900 dark:text-white">
+          <p className="text-base font-black text-[#0a1317]">
             {item.product.name}
           </p>
           <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400">Stok Saat Ini:</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200">
+            <span className="text-[#5d6c7b] font-medium">Stok Saat Ini:</span>
+            <span className="font-black text-[#0a1317]">
               {item.quantity} {item.product.unit}
             </span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#0a1317] mb-1">
               Jumlah Stok Baru ({item.product.unit}) *
             </label>
             <input
@@ -131,12 +131,12 @@ function StockAdjustForm({
               required
               value={newQuantity}
               onChange={(e) => setNewQuantity(parseInt(e.target.value) || 0)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-base font-bold text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-base font-black text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
             />
             {diff !== 0 && (
               <p
-                className={`mt-1 text-xs font-bold ${
-                  diff > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                className={`mt-1.5 text-xs font-extrabold ${
+                  diff > 0 ? 'text-[#31a24c]' : 'text-[#e41e3f]'
                 }`}
               >
                 Perubahan: {diff > 0 ? `+${diff}` : diff} {item.product.unit}
@@ -145,7 +145,7 @@ function StockAdjustForm({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#0a1317] mb-1">
               Alasan / Catatan Penyesuaian *
             </label>
             <textarea
@@ -154,21 +154,21 @@ function StockAdjustForm({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Contoh: Stok opname bulanan, barang rusak, dsb."
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-xs font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
-          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#dee3e9]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-full px-5 py-3 text-xs font-bold text-[#0a1317] hover:bg-[#f1f4f7] transition-all"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700"
+              className="flex items-center gap-2 rounded-full bg-[#0064e0] hover:bg-[#0457cb] px-6 py-3 text-xs font-extrabold text-white shadow-md shadow-[#0064e0]/20 active:scale-98 transition-all"
             >
               <Check className="h-4 w-4" />
               <span>Simpan Penyesuaian</span>

@@ -54,7 +54,7 @@ export default function PosPage() {
       const idx = prev.findIndex((item) => item.product.id === product.id);
       if (idx >= 0) {
         const currentQty = prev[idx].quantity;
-        if (currentQty >= storeStock) return prev; // Cannot exceed stock!
+        if (currentQty >= storeStock) return prev;
         const updated = [...prev];
         updated[idx] = {
           ...updated[idx],
@@ -67,7 +67,7 @@ export default function PosPage() {
         {
           product,
           quantity: 1,
-          unit_price: product.selling_price, // Capturing historical price!
+          unit_price: product.selling_price,
           store_stock: storeStock,
         },
       ];
@@ -82,7 +82,7 @@ export default function PosPage() {
       }
       return prev.map((item) => {
         if (item.product.id === productId) {
-          const qty = Math.min(newQty, item.store_stock); // Enforce stock cap
+          const qty = Math.min(newQty, item.store_stock);
           return { ...item, quantity: qty };
         }
         return item;
@@ -101,7 +101,7 @@ export default function PosPage() {
   const handleCheckoutSuccess = (receipt: SaleReceiptData) => {
     setIsCheckoutOpen(false);
     setCart([]);
-    loadData(); // Refresh store stock immediately!
+    loadData();
     setReceiptData(receipt);
     setIsReceiptOpen(true);
   };
@@ -128,7 +128,6 @@ export default function PosPage() {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing inside input or textarea except Escape
       const target = e.target as HTMLElement;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
 
@@ -157,25 +156,25 @@ export default function PosPage() {
   }, [cart.length, isCheckoutOpen, isReceiptOpen, searchQuery]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Mobile Tab Switcher */}
-      <div className="flex rounded-xl bg-slate-200/80 p-1 dark:bg-slate-800 md:hidden">
+      <div className="flex rounded-full bg-[#f1f4f7] p-1 border border-[#dee3e9] md:hidden">
         <button
           onClick={() => setActiveTabMobile('products')}
-          className={`flex-1 rounded-lg py-2 text-xs font-extrabold transition-all ${
+          className={`flex-1 rounded-full py-2 text-xs font-bold transition-all ${
             activeTabMobile === 'products'
-              ? 'bg-white text-indigo-600 shadow dark:bg-slate-900 dark:text-indigo-400'
-              : 'text-slate-600 dark:text-slate-400'
+              ? 'bg-[#0a1317] text-white shadow-sm'
+              : 'text-[#5d6c7b]'
           }`}
         >
           Katalog Produk
         </button>
         <button
           onClick={() => setActiveTabMobile('cart')}
-          className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-extrabold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1.5 rounded-full py-2 text-xs font-bold transition-all ${
             activeTabMobile === 'cart'
-              ? 'bg-white text-indigo-600 shadow dark:bg-slate-900 dark:text-indigo-400'
-              : 'text-slate-600 dark:text-slate-400'
+              ? 'bg-[#0a1317] text-white shadow-sm'
+              : 'text-[#5d6c7b]'
           }`}
         >
           <ShoppingBag className="h-4 w-4" />
@@ -184,25 +183,25 @@ export default function PosPage() {
       </div>
 
       {/* Keyboard Shortcut Banner */}
-      <div className="hidden sm:flex items-center justify-between rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 px-4 py-2 text-xs text-indigo-700 dark:text-indigo-300">
+      <div className="hidden sm:flex items-center justify-between rounded-2xl bg-[#f1f4f7] border border-[#dee3e9] px-5 py-2.5 text-xs text-[#0a1317]">
         <div className="flex items-center gap-4">
-          <span className="font-extrabold flex items-center gap-1">
+          <span className="font-extrabold flex items-center gap-1 text-[#0064e0]">
             ⚡ Shortcut Kasir Cepat:
           </span>
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+          <span className="flex items-center gap-1 font-bold">
+            <kbd className="rounded-full border border-[#dee3e9] bg-white px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs text-[#0a1317]">
               /
             </kbd>{' '}
             Fokus Cari Produk
           </span>
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+          <span className="flex items-center gap-1 font-bold">
+            <kbd className="rounded-full border border-[#dee3e9] bg-white px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs text-[#0a1317]">
               F2
             </kbd>{' '}
             Bayar & Checkout
           </span>
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 px-1.5 py-0.5 font-mono text-[10px] font-bold shadow-xs">
+          <span className="flex items-center gap-1 font-bold">
+            <kbd className="rounded-full border border-[#dee3e9] bg-white px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs text-[#0a1317]">
               Esc
             </kbd>{' '}
             Reset / Tutup Modal
@@ -214,30 +213,30 @@ export default function PosPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* PRODUCTS CATALOG SECTION */}
         <div
-          className={`md:col-span-2 space-y-4 ${
+          className={`md:col-span-2 space-y-5 ${
             activeTabMobile === 'cart' ? 'hidden md:block' : 'block'
           }`}
         >
           {/* Controls: Search & Category Pills */}
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-            <div className="flex items-center gap-2">
+          <div className="space-y-3.5 rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-4 top-3.5 h-4 w-4 text-[#8595a4]" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari produk berdasarkan nama, SKU, atau barcode... (Tekan '/')"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-12 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-full border border-[#dee3e9] bg-[#f1f4f7] pl-11 pr-12 py-3 text-sm font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
                 />
-                <span className="absolute right-3 top-2.5 hidden sm:inline-block rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-400">
+                <span className="absolute right-4 top-3 hidden sm:inline-block rounded-full border border-[#dee3e9] bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-[#8595a4]">
                   /
                 </span>
               </div>
               <button
                 onClick={loadData}
-                className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="rounded-full p-3 text-[#5d6c7b] bg-[#f1f4f7] border border-[#dee3e9] hover:bg-white transition-all"
                 title="Refresh Stok"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -248,10 +247,10 @@ export default function PosPage() {
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               <button
                 onClick={() => setSelectedCategory('all')}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
+                className={`rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition-all ${
                   selectedCategory === 'all'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                    ? 'bg-[#0a1317] text-white shadow-sm'
+                    : 'bg-[#f1f4f7] text-[#1c1e21] border border-[#dee3e9] hover:bg-white'
                 }`}
               >
                 Semua Kategori
@@ -260,10 +259,10 @@ export default function PosPage() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
+                  className={`rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition-all ${
                     selectedCategory === cat.id
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-[#0a1317] text-white shadow-sm'
+                      : 'bg-[#f1f4f7] text-[#1c1e21] border border-[#dee3e9] hover:bg-white'
                   }`}
                 >
                   {cat.name}
@@ -274,17 +273,17 @@ export default function PosPage() {
 
           {/* Product Cards Grid */}
           {filteredInventory.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900 text-center p-4">
-              <SlidersHorizontal className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2 stroke-[1.5]" />
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-[#dee3e9] bg-white py-12 text-center p-4">
+              <SlidersHorizontal className="h-10 w-10 text-[#8595a4] mb-2 stroke-[1.5]" />
+              <p className="text-sm font-bold text-[#0a1317]">
                 Produk Tidak Ditemukan
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-[#5d6c7b] mt-1">
                 Coba ubah kata kunci pencarian atau kategori produk.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredInventory.map((inv) => (
                 <ProductCard
                   key={inv.product.id}
@@ -331,4 +330,3 @@ export default function PosPage() {
     </div>
   );
 }
-
