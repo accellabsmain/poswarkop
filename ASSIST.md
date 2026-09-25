@@ -166,12 +166,12 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Memberikan kontrol penuh bagi Owner untuk memantau performa 3 toko dan mengelola hak akses seluruh staf.
 
 ### 🛠️ Backend Tasks — [ 👤 Lintang ]
-- [ ] **Task 5.1**: User Management Server Actions
-  - Buat Next.js Server Action `assignUserStore(userId, storeId)` dan `updateUserRole(userId, newRole)` menggunakan Supabase Service Role Key.
-- [ ] **Task 5.2**: Aggregated Sales & Revenue Analytics Query
-  - Buat SQL view/RPC untuk statistik: Total omset per toko, grafik penjualan harian/bulanan, dan top-selling products.
-- [ ] **Task 5.3**: Audit Log Query Function
-  - Query log aktivitas sistem (`audit_logs`) untuk keperluan pengawasan aktivitas kasir & manager.
+- [x] **Task 5.1**: User Management Server Actions
+  - Buat Next.js Server Action `assignUserStore(userId, storeId)` dan `updateUserRole(userId, newRole)` menggunakan Supabase Service Role Key. *(Selesai: Server Actions di `src/app/actions/user-management.ts` with `requireRole(['owner'])`)*
+- [x] **Task 5.2**: Aggregated Sales & Revenue Analytics Query
+  - Buat SQL view/RPC untuk statistik: Total omset per toko, grafik penjualan harian/bulanan, dan top-selling products. *(Selesai: `get_store_revenue_summary()`, `get_sales_chart_data()`, dan `get_top_selling_products()`)*
+- [x] **Task 5.3**: Audit Log Query Function
+  - Query log aktivitas sistem (`audit_logs`) untuk keperluan pengawasan aktivitas kasir & manager. *(Selesai: RPC `get_audit_logs()` with RLS protection & metadata joins)*
 
 ### 🎨 Frontend Tasks — [ 👤 Nares ]
 - [x] **Task 5.4**: User & Role Management Dashboard UI
