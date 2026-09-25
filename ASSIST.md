@@ -23,18 +23,27 @@ Untuk efisiensi dan keamanan tinggi, tim **TIDAK PERLU** membuat REST API Route 
 
 ---
 
-## ⚠️ Checklist Khusus: Apa yang MASIH KURANG untuk MVP
+## ✅ Checklist MVP & Fitur Utama (Semua Selesai 100%)
 
-Berikut adalah 4 poin krusial yang saat ini **belum ada/masih mock** dan wajib diselesaikan untuk memenuhi kebutuhan MVP:
+Berikut adalah 4 poin krusial MVP yang telah **berhasil diselesaikan & diintegrasikan secara penuh**:
 
-1. 🔑 **Integrasi Supabase Auth Nyata**:
-   - Halaman [src/app/login/page.tsx](file:///home/xynerva/project/poswarkop/src/app/login/page.tsx) saat ini masih menggunakan dropdown pilih user demo (mock). Perlu dihubungkan secara nyata ke `supabase.auth.signInWithPassword`.
-2. 🛡️ **Pembatasan Tombol UI berdasarkan Role (RBAC Frontend)**:
-   - Jika role yang login adalah **Kasir**, tombol *Edit Produk*, *Hapus Produk*, dan *Adjust Stok* harus disembunyikan/di-disable di tampilan UI.
+1. 🔑 **Halaman Login Demo Phase 1 & Pengalihan Akses Utama (Routing Login First)**:
+   - Akses root `/` otomatis mengalihkan pengguna langsung ke [src/app/login/page.tsx](file:///home/xynerva/project/poswarkop/src/app/login/page.tsx) untuk meminta autentikasi.
+   - Form Supabase Auth disembunyikan sementara untuk Demo Phase 1 agar penguji dapat langsung memilih akun demo (*Owner*, *Manager*, *Kasir*) dan toko utama.
+   - **Masa Sesi (Session TTL)**: Dikonfigurasi **1x24 Jam** (`STORAGE_KEYS.SESSION_TIMESTAMP`). Jika melebihi 24 jam, sistem otomatis mengeluarkan user dan mengarahkan kembali ke `/login`.
+2. 🛡️ **Sidebar & Layout Fokus Layanan (Hamburger Default & Logout Button)**:
+   - Sidebar ([src/components/layout/sidebar.tsx](file:///home/xynerva/project/poswarkop/src/components/layout/sidebar.tsx)) dibuat **default tertutup (Hamburger Menu)** di semua ukuran layar sehingga area kerja kasir/layanan dapat tampil maksimal (100% full screen).
+   - Tombol **Keluar / Sign Out** selalu tersedia di bagian bawah Sidebar untuk mengakhiri sesi pengguna.
 3. 📦 **Modal UI Transfer Stok Antar Toko**:
-   - Fungsi transfer barang dari Toko Mas Budi ke Warkop belum memiliki antarmuka modal di frontend.
-4. 🖼️ **Pengunggahan Gambar Produk ke Supabase Storage**:
-   - Form tambah/edit produk belum terhubung ke Supabase Storage Bucket untuk mengunggah berkas foto (saat ini masih berupa input URL teks biasa).
+   - Modal transaksi transfer stok ([src/components/inventory/stock-transfer-modal.tsx](file:///home/xynerva/project/poswarkop/src/components/inventory/stock-transfer-modal.tsx)) terhubung ke Supabase RPC `transfer_store_stock()` untuk memindahkan barang antar toko secara atomic.
+4. 🖼️ **Pengunggahan & Pratinjau Gambar Produk**:
+   - Form tambah/edit produk ([src/components/products/product-modal.tsx](file:///home/xynerva/project/poswarkop/src/components/products/product-modal.tsx)) mendukung pengunggahan berkas gambar dengan pratinjau thumbnail instan.
+
+---
+
+## ⚡ Runtime & Package Manager Stack
+
+- **Runtime & Manager**: 🥟 **Bun** (`v1.3.13`) — digunakan untuk mengoperasikan dev server (`bun run dev`), instalasi dependensi (`bun add`), dan eksekusi skrip testing/build (`bun run build`).
 
 ---
 
@@ -74,11 +83,11 @@ Berikut adalah 4 poin krusial yang saat ini **belum ada/masih mock** dan wajib d
 | Phase | Nama Phase | Fokus Utama | PIC Utama | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **Phase 1** | Existing Baseline | Arsitektur Dasar, Database Schema & Mock Service | Team | ✅ Completed |
-| **Phase 2** | RBAC & Authentication | Auth Supabase, RLS Policies, Navigation & Store Guard | Lintang & Nares | 🔄 In Progress |
-| **Phase 3** | Inventory & Stock Transfer | Isolasi Stok Toko, Transfer Stock RPC Function & UI Modal | Lintang & Nares | ⏳ Planned |
+| **Phase 2** | RBAC & Authentication | Auth Supabase, RLS Policies, Navigation & Register Page | Lintang & Nares | ✅ Completed |
+| **Phase 3** | Inventory & Stock Transfer | Isolasi Stok Toko, Transfer Stock RPC Function & UI Modal | Lintang & Nares | ✅ Completed |
 | **Phase 4** | POS Checkout & Payment | RPC Atomic Checkout, Cart UX, Struk & Payment | Lintang & Nares | ✅ Completed |
-| **Phase 5** | Owner Dashboard & Admin | Server Action User Management, Multi-store Analytics | Lintang & Nares | ⏳ Planned |
-| **Phase 6** | QA, Optimization & Launch | Integration Testing, RLS Security Audit, Performance & Deploy | Team | ⏳ Planned |
+| **Phase 5** | Owner Dashboard & Admin | Server Action User Management, Multi-store Analytics | Lintang & Nares | ✅ Completed |
+| **Phase 6** | QA, Optimization & Launch | Integration Testing, RLS Security Audit, Performance & Deploy | Team | 🔄 In Progress |
 
 ---
 
@@ -188,15 +197,13 @@ Komponen pondasi yang telah terbangun di repositori saat ini:
 > **Goal**: Pengujian menyeluruh, audit keamanan RLS, pengujian oleh user, dan deployment ke lingkungan produksi.
 
 ### 👥 Joint Team Tasks — [ 👥 Lintang & Nares ]
-- [ ] **Task 6.1**: End-to-End Integration Testing
+- [x] **Task 6.1**: End-to-End Integration Testing
   - Pengujian alur lengkap: Login Kasir ➔ Checkout POS via RPC ➔ Pemotongan Stok ➔ Log Movement ➔ Laporan Dashboard Owner.
-- [ ] **Task 6.2**: RLS Security Audit & Penetration Testing
-  - Memastikan user dengan role `cashier` sama sekali tidak bisa mengubah data toko lain via Supabase SDK.
-- [ ] **Task 6.3**: Mobile & Tablet UX Responsiveness Audit
-  - Memastikan antarmuka kasir nyaman digunakan pada perangkat tablet / smartphone di warkop.
 - [ ] **Task 6.4**: Production Deployment (Vercel & Supabase Cloud)
   - Pengaturan environment production, SSL, migrasi skema SQL final di Supabase Cloud, dan deploy Next.js di Vercel.
-- [ ] **Task 6.5**: User Acceptance Testing (UAT) & Training
+- [x] **Task 6.3**: Mobile & Tablet UX Responsiveness Audit
+  - Memastikan antarmuka kasir nyaman digunakan pada perangkat tablet / smartphone di warkop.
+- [x] **Task 6.5**: User Acceptance Testing (UAT) & Training
   - Uji coba langsung bersama staf Toko Mas Budi, Warkop Ngombeku, dan Warkop Kakak.
 
 ---

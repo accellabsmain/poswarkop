@@ -45,11 +45,11 @@ export default function UsersManagementPage() {
   if (!isOwner) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 mb-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 mb-4">
           <ShieldAlert className="h-8 w-8" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Akses Dibatasi</h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-md">
+        <h2 className="text-xl font-bold text-[#0a1317]">Akses Dibatasi</h2>
+        <p className="mt-1 text-sm text-slate-500 max-w-md">
           Halaman Manajemen Pegawai hanya dapat diakses oleh pengguna dengan hak akses <strong>Owner</strong>.
         </p>
       </div>
@@ -173,20 +173,20 @@ export default function UsersManagementPage() {
     switch (role) {
       case 'owner':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 dark:bg-purple-950/60 px-3 py-1 text-xs font-bold text-purple-700 dark:text-purple-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700">
             <ShieldCheck className="h-3.5 w-3.5" /> Owner
           </span>
         );
       case 'manager':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-950/60 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-[#0064e0]">
             <Briefcase className="h-3.5 w-3.5" /> Manager
           </span>
         );
       case 'cashier':
       default:
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
             <User className="h-3.5 w-3.5" /> Kasir
           </span>
         );
@@ -198,22 +198,22 @@ export default function UsersManagementPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0064e0]/10 text-[#0064e0]">
               <Users className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-[#0a1317]">
               Manajemen Pegawai
             </h1>
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-slate-500">
             Kelola data staf, penambahan akun pegawai baru, dan alokasi hak akses toko.
           </p>
         </div>
 
         <button
           onClick={openAddModal}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 active:scale-95 transition-all"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0064e0] px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#0052b8] active:scale-[0.98] transition-all"
         >
           <UserPlus className="h-4 w-4" />
           <span>Tambah Pegawai Baru</span>
@@ -222,7 +222,7 @@ export default function UsersManagementPage() {
 
       {/* Success Banner */}
       {successMessage && (
-        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
+        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-xs font-semibold text-emerald-700 border border-emerald-200">
           <Check className="h-5 w-5 text-emerald-500 shrink-0" />
           <span>{successMessage}</span>
         </div>
@@ -230,25 +230,25 @@ export default function UsersManagementPage() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Pegawai</p>
-          <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{totalUsers}</p>
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500">Total Pegawai</p>
+          <p className="mt-1 text-2xl font-bold text-[#0a1317]">{totalUsers}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Owner</p>
-          <p className="mt-1 text-2xl font-black text-purple-600 dark:text-purple-400">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500">Owner</p>
+          <p className="mt-1 text-2xl font-bold text-purple-600">
             {ownerCount}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Manager</p>
-          <p className="mt-1 text-2xl font-black text-blue-600 dark:text-blue-400">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500">Manager</p>
+          <p className="mt-1 text-2xl font-bold text-[#0064e0]">
             {managerCount}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Kasir</p>
-          <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">
+        <div className="rounded-3xl border border-[#dee3e9] bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500">Kasir</p>
+          <p className="mt-1 text-2xl font-bold text-emerald-600">
             {cashierCount}
           </p>
         </div>
@@ -257,25 +257,25 @@ export default function UsersManagementPage() {
       {/* Filter & Search */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Cari nama pegawai..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs font-medium text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-white focus:outline-none focus:border-indigo-600"
+            className="w-full rounded-full border border-[#dee3e9] bg-[#f1f4f7] pl-11 pr-4 py-2.5 text-xs font-medium text-[#0a1317] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
           />
         </div>
 
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           {['all', 'owner', 'manager', 'cashier'].map((r) => (
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
-              className={`rounded-xl px-3 py-2 text-xs font-bold capitalize transition-all ${
+              className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition-all shrink-0 ${
                 roleFilter === r
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
+                  ? 'bg-[#0a1317] text-white shadow-sm'
+                  : 'bg-white border border-[#dee3e9] text-slate-600 hover:bg-[#f1f4f7]'
               }`}
             >
               {r === 'all' ? 'Semua Role' : r}
@@ -285,10 +285,10 @@ export default function UsersManagementPage() {
       </div>
 
       {/* Employee List Table */}
-      <div className="rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+      <div className="rounded-3xl border border-[#dee3e9] bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50 text-slate-500 font-bold uppercase tracking-wider">
+            <thead className="border-b border-[#dee3e9] bg-[#f1f4f7] text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="px-6 py-4">Pegawai</th>
                 <th className="px-6 py-4">Role / Hak Akses</th>
@@ -296,10 +296,10 @@ export default function UsersManagementPage() {
                 <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+            <tbody className="divide-y divide-[#dee3e9] font-medium">
               {filteredProfiles.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
                     Tidak ada data pegawai yang ditemukan.
                   </td>
                 </tr>
@@ -307,15 +307,15 @@ export default function UsersManagementPage() {
                 filteredProfiles.map((p) => (
                   <tr
                     key={p.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                    className="hover:bg-[#f1f4f7]/60 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-bold dark:bg-slate-800 dark:text-slate-200">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f1f4f7] text-[#0a1317] font-bold border border-[#dee3e9]">
                           {p.full_name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-extrabold text-slate-900 dark:text-white text-sm">
+                          <p className="font-bold text-[#0a1317] text-sm">
                             {p.full_name}
                           </p>
                           <p className="text-[11px] text-slate-400 font-mono mt-0.5">{p.id}</p>
@@ -329,9 +329,9 @@ export default function UsersManagementPage() {
                           p.stores.map((s) => (
                             <span
                               key={s.id}
-                              className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300"
+                              className="inline-flex items-center gap-1 rounded-full bg-[#f1f4f7] border border-[#dee3e9] px-3 py-1 text-[11px] font-semibold text-slate-700"
                             >
-                              <StoreIcon className="h-3 w-3 text-indigo-500" />
+                              <StoreIcon className="h-3 w-3 text-[#0064e0]" />
                               {s.name}
                             </span>
                           ))
@@ -344,14 +344,14 @@ export default function UsersManagementPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-indigo-400 transition-colors"
+                          className="rounded-full p-2 text-slate-500 hover:bg-[#f1f4f7] hover:text-[#0064e0] transition-colors"
                           title="Edit Pegawai"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteUser(p)}
-                          className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors"
+                          className="rounded-full p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
                           title="Hapus Pegawai"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -368,29 +368,29 @@ export default function UsersManagementPage() {
 
       {/* Modal Add/Edit Employee */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-[#dee3e9]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#dee3e9]">
+              <h3 className="text-base font-bold text-[#0a1317]">
                 {editingProfile ? 'Edit Akun Pegawai' : 'Tambah Pegawai Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="rounded-full p-2 text-slate-400 hover:bg-[#f1f4f7] hover:text-[#0a1317] transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {errorMessage && (
-              <div className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 p-3 text-xs font-semibold text-rose-600 border border-rose-200 dark:border-rose-900">
+              <div className="mt-4 rounded-2xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 border border-rose-200">
                 {errorMessage}
               </div>
             )}
 
             <form onSubmit={handleSaveUser} className="mt-4 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Nama Lengkap
                 </label>
                 <input
@@ -398,19 +398,19 @@ export default function UsersManagementPage() {
                   placeholder="misal: Budi Santoso"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+                  className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-medium text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Role Akses
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+                  className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-semibold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
                 >
                   <option value="cashier">Kasir - Hanya Akses Checkout POS</option>
                   <option value="manager">Manager - Akses Stok Inventaris & Produk</option>
@@ -419,20 +419,20 @@ export default function UsersManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Alokasi Akses Toko
                 </label>
-                <div className="space-y-2 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50 dark:bg-slate-950/40">
+                <div className="space-y-2 rounded-2xl border border-[#dee3e9] p-3 bg-[#f1f4f7]">
                   {stores.map((s) => {
                     const isChecked = selectedStoreIds.includes(s.id);
                     return (
                       <label
                         key={s.id}
-                        className="flex items-center justify-between p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-[#dee3e9] bg-white cursor-pointer hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <StoreIcon className="h-4 w-4 text-indigo-600" />
-                          <span className="text-xs font-semibold text-slate-800 dark:text-white">
+                          <StoreIcon className="h-4 w-4 text-[#0064e0]" />
+                          <span className="text-xs font-semibold text-[#0a1317]">
                             {s.name} ({s.code})
                           </span>
                         </div>
@@ -440,7 +440,7 @@ export default function UsersManagementPage() {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleStore(s.id)}
-                          className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500"
+                          className="h-4 w-4 rounded text-[#0064e0] focus:ring-[#0064e0]"
                         />
                       </label>
                     );
@@ -452,13 +452,13 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 py-3 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex-1 rounded-full border border-[#dee3e9] bg-white py-3 text-xs font-semibold text-slate-700 hover:bg-[#f1f4f7] transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 rounded-xl bg-indigo-600 py-3 text-sm font-extrabold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 active:scale-95 transition-all"
+                  className="flex-1 rounded-full bg-[#0064e0] py-3 text-xs font-semibold text-white shadow-sm hover:bg-[#0052b8] active:scale-[0.98] transition-all"
                 >
                   {editingProfile ? 'Simpan Perubahan' : 'Tambah Pegawai'}
                 </button>

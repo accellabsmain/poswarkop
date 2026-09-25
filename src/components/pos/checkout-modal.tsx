@@ -92,21 +92,21 @@ export function CheckoutModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-[#dee3e9]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-[#dee3e9]">
           <div>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+            <h3 className="text-base font-bold text-[#0a1317]">
               Pembayaran & Checkout
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Toko: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{activeStore.name}</span>
+            <p className="text-xs text-slate-500">
+              Toko: <span className="font-semibold text-[#0064e0]">{activeStore.name}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-full p-2 text-slate-400 hover:bg-[#f1f4f7] hover:text-[#0a1317] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -114,25 +114,25 @@ export function CheckoutModal({
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700 dark:bg-rose-950/50 dark:border-rose-800 dark:text-rose-300">
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700">
             <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {/* Total Banner */}
-        <div className="mt-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 p-4 text-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+        <div className="mt-4 rounded-2xl bg-[#f1f4f7] border border-[#dee3e9] p-4 text-center">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Total Tagihan
           </p>
-          <p className="text-3xl font-black text-indigo-700 dark:text-indigo-300 mt-1">
+          <p className="text-3xl font-bold text-[#0064e0] mt-1">
             Rp {totalAmount.toLocaleString('id-ID')}
           </p>
         </div>
 
         {/* Payment Method Selector */}
         <div className="mt-5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          <label className="block text-xs font-semibold text-slate-600 mb-2">
             Metode Pembayaran
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -146,10 +146,10 @@ export function CheckoutModal({
                     setPaymentMethod(opt.id);
                     if (opt.id !== 'CASH') setAmountReceived(totalAmount);
                   }}
-                  className={`flex items-center gap-2.5 rounded-xl border p-3 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-2.5 rounded-2xl border p-3 text-xs font-semibold transition-all ${
                     isSelected
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-950/60 dark:text-indigo-300'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                      ? 'border-[#0064e0] bg-[#0064e0]/10 text-[#0064e0] shadow-sm'
+                      : 'border-[#dee3e9] bg-white text-slate-700 hover:bg-[#f1f4f7]'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -164,7 +164,7 @@ export function CheckoutModal({
         {paymentMethod === 'CASH' && (
           <div className="mt-5 space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Uang Diterima (Rp)
               </label>
               <input
@@ -172,7 +172,7 @@ export function CheckoutModal({
                 min={totalAmount}
                 value={amountReceived}
                 onChange={(e) => setAmountReceived(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-base font-bold text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-base font-bold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
               />
             </div>
 
@@ -185,7 +185,7 @@ export function CheckoutModal({
                     key={amt}
                     type="button"
                     onClick={() => handleQuickCash(amt)}
-                    className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    className="rounded-full border border-[#dee3e9] bg-[#f1f4f7] px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-[#0064e0] hover:text-white hover:border-[#0064e0] transition-colors"
                   >
                     {amt === totalAmount ? 'Uang Pas' : `Rp ${amt.toLocaleString('id-ID')}`}
                   </button>
@@ -193,11 +193,11 @@ export function CheckoutModal({
             </div>
 
             {/* Kembalian */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-800 p-3">
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+            <div className="flex items-center justify-between rounded-2xl bg-[#f1f4f7] border border-[#dee3e9] p-3.5">
+              <span className="text-xs font-semibold text-slate-600">
                 Kembalian
               </span>
-              <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="text-base font-bold text-emerald-600">
                 Rp {changeAmount.toLocaleString('id-ID')}
               </span>
             </div>
@@ -206,7 +206,7 @@ export function CheckoutModal({
 
         {/* Catatan Transaksi */}
         <div className="mt-4">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+          <label className="block text-xs font-semibold text-slate-600 mb-1">
             Catatan Transaksi (Opsional)
           </label>
           <input
@@ -214,16 +214,16 @@ export function CheckoutModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Catatan tambahan untuk struk..."
-            className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#dee3e9]">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            className="rounded-full border border-[#dee3e9] bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-[#f1f4f7] transition-colors"
           >
             Batal
           </button>
@@ -231,7 +231,7 @@ export function CheckoutModal({
             type="button"
             onClick={handleCheckout}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-full bg-[#0064e0] px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#0052b8] active:scale-[0.98] transition-all disabled:opacity-50"
           >
             <CheckCircle2 className="h-4 w-4" />
             <span>{isSubmitting ? 'Memproses...' : 'Konfirmasi Transaksi'}</span>

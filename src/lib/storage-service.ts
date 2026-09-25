@@ -30,6 +30,7 @@ const STORAGE_KEYS = {
   SALES: 'pos_sales',
   ACTIVE_STORE: 'pos_active_store_id',
   ACTIVE_USER: 'pos_active_user_id',
+  SESSION_TIMESTAMP: 'pos_session_timestamp',
 };
 
 // Helper for local storage read/write with SSR safety
@@ -54,6 +55,28 @@ function setStoredData<T>(key: string, data: T): void {
 
 // Data Services
 export const StorageService = {
+  // --- SESSION MANAGEMENT (1x24 Jam) ---
+  createSession(): void {
+    setStoredData(STORAGE_KEYS.SESSION_TIMESTAMP, Date.now());
+  },
+
+  isSessionValid(): boolean {
+    if (typeof window === 'undefined') return true;
+    const timestamp = getStoredData<number | null>(STORAGE_KEYS.SESSION_TIMESTAMP, null);
+    if (!timestamp) return false;
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    return Date.now() - timestamp < TWENTY_FOUR_HOURS;
+  },
+
+  logout(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(STORAGE_KEYS.SESSION_TIMESTAMP);
+    } catch (err) {
+      console.error('Error logging out:', err);
+    }
+  },
+
   // --- STORES & PROFILES ---
   getStores(): Store[] {
     return getStoredData<Store[]>(STORAGE_KEYS.STORES, INITIAL_STORES);
@@ -69,6 +92,7 @@ export const StorageService = {
 
   setActiveUserId(id: string): void {
     setStoredData(STORAGE_KEYS.ACTIVE_USER, id);
+    this.createSession();
   },
 
   getCurrentUser(): UserProfile {

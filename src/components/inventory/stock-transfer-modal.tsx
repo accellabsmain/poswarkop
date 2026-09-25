@@ -84,31 +84,31 @@ export function StockTransferModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-[#dee3e9]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+        <div className="flex items-center justify-between pb-4 border-b border-[#dee3e9]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0064e0]/10 text-[#0064e0]">
               <ArrowRightLeft className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold text-[#0a1317]">
                 Transfer Stok Antar Toko
               </h3>
-              <p className="text-[11px] text-slate-400">Pindahkan stok barang antar cabang toko</p>
+              <p className="text-xs text-slate-500">Pindahkan stok barang antar cabang toko</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-full p-2 text-slate-400 hover:bg-[#f1f4f7] hover:text-[#0a1317] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 p-3 text-xs font-semibold text-rose-600 border border-rose-200 dark:border-rose-900">
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-rose-50 p-3 text-xs font-semibold text-rose-600 border border-rose-200">
             <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
             <span>{errorMsg}</span>
           </div>
@@ -117,7 +117,7 @@ export function StockTransferModal({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* From Store */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Toko Asal (Sumber Stok)
             </label>
             <select
@@ -129,7 +129,7 @@ export function StockTransferModal({
                   if (alt) setToStoreId(alt.id);
                 }
               }}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-semibold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
             >
               {stores.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -141,13 +141,13 @@ export function StockTransferModal({
 
           {/* To Store */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Toko Tujuan (Penerima Stok)
             </label>
             <select
               value={toStoreId}
               onChange={(e) => setToStoreId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-semibold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
             >
               {stores
                 .filter((s) => s.id !== fromStoreId)
@@ -161,13 +161,13 @@ export function StockTransferModal({
 
           {/* Product Selection */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Pilih Produk
             </label>
             <select
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-semibold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -175,9 +175,9 @@ export function StockTransferModal({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <p className="mt-1.5 text-xs font-medium text-slate-500">
               Stok tersedia di toko asal:{' '}
-              <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
+              <span className="font-bold text-[#0064e0]">
                 {availableStock}
               </span>
             </p>
@@ -185,7 +185,7 @@ export function StockTransferModal({
 
           {/* Quantity */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Jumlah Transfer
             </label>
             <input
@@ -194,14 +194,14 @@ export function StockTransferModal({
               max={availableStock}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-extrabold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-sm font-bold text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
               required
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Catatan / Keterangan (Opsional)
             </label>
             <input
@@ -209,7 +209,7 @@ export function StockTransferModal({
               placeholder="misal: Pasokan mingguan dari toko pusat"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-600"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-2.5 text-xs font-medium text-[#0a1317] focus:bg-white focus:outline-none focus:border-[#0064e0] transition-colors"
             />
           </div>
 
@@ -218,14 +218,14 @@ export function StockTransferModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 py-3 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="flex-1 rounded-full border border-[#dee3e9] bg-white py-3 text-xs font-semibold text-slate-700 hover:bg-[#f1f4f7] transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting || availableStock <= 0}
-              className="flex-1 rounded-xl bg-indigo-600 py-3 text-xs font-extrabold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-full bg-[#0064e0] py-3 text-xs font-semibold text-white shadow-sm hover:bg-[#0052b8] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Memproses...' : 'Proses Transfer Stok'}
             </button>

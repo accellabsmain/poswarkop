@@ -51,8 +51,24 @@ function ProductModalForm({
   const [purchasePrice, setPurchasePrice] = useState<number>(product?.purchase_price || 0);
   const [sellingPrice, setSellingPrice] = useState<number>(product?.selling_price || 0);
   const [minimumStock, setMinimumStock] = useState<number>(product?.minimum_stock ?? 5);
+  const [imageUrl, setImageUrl] = useState(product?.image_url || '');
   const [isActive, setIsActive] = useState(product?.is_active ?? true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrorMsg('Ukuran gambar maksimal 2 MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +95,7 @@ function ProductModalForm({
         purchase_price: purchasePrice,
         selling_price: sellingPrice,
         minimum_stock: minimumStock,
+        image_url: imageUrl.trim() || null,
         is_active: isActive,
       });
 
@@ -94,30 +111,30 @@ function ProductModalForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-            {product ? 'Edit Produk' : 'Tambah Produk Baru'}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1317]/50 p-4 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-[#dee3e9]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#dee3e9]">
+          <h3 className="text-lg font-black text-[#0a1317]">
+            {product ? 'Edit Produk Master' : 'Tambah Produk Baru'}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-full p-2 text-[#5d6c7b] hover:bg-[#f1f4f7] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700 dark:bg-rose-950/50 dark:border-rose-800 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-[#e41e3f]/10 border border-[#e41e3f]/20 p-3.5 text-xs font-bold text-[#e41e3f]">
+            <AlertCircle className="h-4 w-4 shrink-0 text-[#e41e3f]" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#0a1317] mb-1">
               Nama Produk *
             </label>
             <input
@@ -126,13 +143,13 @@ function ProductModalForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contoh: Aqua 600ml"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 SKU *
               </label>
               <input
@@ -140,11 +157,11 @@ function ProductModalForm({
                 required
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-bold text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Barcode (Opsional)
               </label>
               <input
@@ -152,20 +169,20 @@ function ProductModalForm({
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 placeholder="Scan / ketik barcode"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Kategori
               </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-xs font-extrabold text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none cursor-pointer transition-all"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -175,7 +192,7 @@ function ProductModalForm({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Satuan (Unit)
               </label>
               <input
@@ -183,14 +200,14 @@ function ProductModalForm({
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 placeholder="pcs, botol, bungkus"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-medium text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Harga Beli (Modal Rp)
               </label>
               <input
@@ -198,11 +215,11 @@ function ProductModalForm({
                 min="0"
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-bold text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Harga Jual (Rp) *
               </label>
               <input
@@ -211,14 +228,14 @@ function ProductModalForm({
                 required
                 value={sellingPrice}
                 onChange={(e) => setSellingPrice(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-black text-[#0064e0] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#0a1317] mb-1">
                 Minimum Stock (Alert)
               </label>
               <input
@@ -226,34 +243,59 @@ function ProductModalForm({
                 min="0"
                 value={minimumStock}
                 onChange={(e) => setMinimumStock(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-2xl border border-[#dee3e9] bg-[#f1f4f7] px-4 py-3 text-sm font-bold text-[#0a1317] focus:border-[#0064e0] focus:bg-white focus:outline-none transition-all"
               />
             </div>
 
             <div className="flex items-center pt-5">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-extrabold text-[#0a1317]">
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-[#dee3e9] text-[#0064e0] focus:ring-[#0064e0]"
                 />
                 <span>Produk Aktif (Bisa Dijual)</span>
               </label>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          {/* Upload Foto Produk */}
+          <div>
+            <label className="block text-xs font-bold text-[#0a1317] mb-1">
+              Foto / Gambar Produk
+            </label>
+            <div className="flex items-center gap-3">
+              {imageUrl ? (
+                <div className="relative h-12 w-12 rounded-2xl overflow-hidden border border-[#dee3e9] bg-[#f1f4f7] shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <div className="h-12 w-12 rounded-2xl border border-dashed border-[#ced0d4] bg-[#f1f4f7] flex items-center justify-center text-[10px] text-[#8595a4] font-bold shrink-0">
+                  No Pic
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full text-xs text-[#5d6c7b] file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-extrabold file:bg-[#0a1317] file:text-white hover:file:bg-[#1c1e21] cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#dee3e9]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-full px-5 py-3 text-xs font-bold text-[#0a1317] hover:bg-[#f1f4f7] transition-all"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700"
+              className="flex items-center gap-2 rounded-full bg-[#0064e0] hover:bg-[#0457cb] px-6 py-3 text-xs font-extrabold text-white shadow-md shadow-[#0064e0]/20 active:scale-98 transition-all"
             >
               <Save className="h-4 w-4" />
               <span>Simpan Produk</span>
