@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { StorageService } from '@/lib/storage-service';
 import { UserProfile, UserRole, Store } from '@/types';
+import { updateUserProfile, deleteUser } from '@/app/actions/user-management';
 import {
   Users,
   UserPlus,
@@ -101,12 +102,25 @@ export default function UsersManagementPage() {
 
     const assignedStores = stores.filter((s) => selectedStoreIds.includes(s.id));
 
-    StorageService.saveProfile({
+    // 1. Simpan di StorageService untuk instant UI update & offline mock support
+    const saved = StorageService.saveProfile({
       id: editingProfile?.id,
       full_name: fullName.trim(),
       role,
       stores: assignedStores,
     });
+
+    // 2. Sinkronkan ke Supabase Cloud via Server Action (Task 5.1)
+    if (editingProfile?.id) {
+      updateUserProfile({
+        userId: editingProfile.id,
+        fullName: fullName.trim(),
+        role,
+        storeIds: selectedStoreIds,
+      }).catch((err) => {
+        console.warn('Notice: Supabase server action skipped/offline:', err?.message || err);
+      });
+    }
 
     refreshProfiles();
     setIsModalOpen(false);
@@ -126,8 +140,17 @@ export default function UsersManagementPage() {
     }
 
     if (confirm(`Apakah Anda yakin ingin menghapus pegawai "${profile.full_name}"?`)) {
+      // 1. Hapus dari LocalStorage
       StorageService.deleteProfile(profile.id);
       refreshProfiles();
+
+      // 2. Sinkronkan penghapusan ke Supabase Cloud via Server Action (Task 5.1)
+      if (profile.id && !profile.id.startsWith('user-')) {
+        deleteUser(profile.id).catch((err) => {
+          console.warn('Notice: Supabase delete action skipped/offline:', err?.message || err);
+        });
+      }
+
       setSuccessMessage(`Pegawai "${profile.full_name}" telah dihapus.`);
       setTimeout(() => setSuccessMessage(''), 4000);
     }

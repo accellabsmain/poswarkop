@@ -24,10 +24,11 @@ Berikut rincian perbedaan antara arsitektur baseline sebelumnya dengan kapabilit
 
 | Area / Komponen | ❌ Sebelum (Phase 3) | ✅ Sesudah (Phase 4 Task 4.1–4.3) | Alasan Perubahan & Keuntungan |
 | :--- | :--- | :--- | :--- |
-| **Row Locking Concurrent Checkout** | Pengecekan stok biasa tanpa explicit row lock. Membuka celah race condition jika dua kasir checkout barang terakhir bersamaan. | Menggunakan **`PERFORM 1 FROM inventory WHERE ... FOR UPDATE`** sebelum pemotongan stok. | Menjamin ACID: Penguncian baris inventaris memastikan transaksi dilakukan secara berurutan (*serializable/concurrency-safe*). |
+| **Row Locking Concurrent Checkout** | Pengecekan stok biasa tanpa explicit row lock. Membuka celah race condition jika dua kasir checkout barang terakhir bersamaan. | Menggunakan **`SELECT COALESCE(quantity, 0) INTO v_curr_stock FROM inventory WHERE ... FOR UPDATE`** untuk mengunci baris inventaris dan membaca nilai stok terkini setelah lock diperoleh. | Menjamin ACID: Penguncian baris inventaris memastikan transaksi dilakukan secara berurutan (*serializable/concurrency-safe*) dan stok tidak mungkin bernilai minus. |
 | **Validasi Uang Pembayaran (Task 4.3)** | Validasi pembayaran sederhana hanya untuk CASH, tanpa penanganan khusus untuk non-cash. | Ditambahkan validasi otomatis: Untuk **CASH** wajib `amount_paid >= total_amount`; untuk **QRIS/DEBIT/TRANSFER**, kembalian diset `0` dan `amount_paid` diset tepat sejumlah total. | Mencegah kesalahan manusia (human error) kasir dalam memasukkan angka pembayaran non-tunai. |
-| **Query Data Struk Thermal (Task 4.2)** | Struk harus di-construct manual di client-side dari beberapa query tabel terpisah (`sales`, `stores`, `sale_items`, `profiles`, `payments`). | Disediakan RPC **`get_receipt_details(p_sale_id)`** yang mengembalikan JSON siap pakai berisi metadata toko, kasir, itemized products, dan kalkulasi pembayaran. | Mengurangi *network round-trip* frontend dan mempercepat rendering cetak struk thermal 80mm/58mm. |
-| **Integrasi Service Layer (Bun)** | Belum ada helper khusus `getReceiptDetails()` di TypeScript client. | Menambahkan helper async **`getReceiptDetails(saleId)`** di [`src/lib/supabase/queries.ts`](file:///home/xynerva/project/poswarkop/src/lib/supabase/queries.ts) serta skrip pengujian berbasis **Bun** (`src/lib/supabase/test-phase4.ts`). | Frontend developer (Nares) tinggal memanggil 1 fungsi dengan type-safety lengkap. |
+| **Query Data Struk Thermal (Task 4.2)** | Struk harus di-construct manual di client-side dari beberapa query tabel terpisah (`sales`, `stores`, `sale_items`, `profiles`, `payments`). | Disediakan RPC **`get_receipt_details(p_sale_id)`** yang mengembalikan JSON dengan struktur bertingkat (`sale`, `store`, `items`, `payment`, `cashier_name`) sesuai interface `SaleReceiptData`. | Kompatibel 100% dengan modal dan komponen cetak struk thermal 80mm/58mm frontend tanpa manipulasi data tambahan. |
+| **Keamanan Eksekusi (Search Path)** | Fungsi `SECURITY DEFINER` tanpa penetapan `search_path` eksplisit. | Ditambahkan klausul **`SET search_path = public`** pada seluruh fungsi RPC Phase 4. | Memenuhi standar keamanan PostgreSQL & Supabase Security Linter untuk mencegah eksploitasi *search path hijacking*. |
+| **Integrasi Service Layer (Bun)** | Belum ada helper khusus `getReceiptDetails()` di TypeScript client. | Menambahkan helper async **`getReceiptDetails(saleId): Promise<SaleReceiptData>`** di [`src/lib/supabase/queries.ts`](file:///home/anxiety/Project/poswarkop/src/lib/supabase/queries.ts) serta skrip pengujian berbasis **Bun** (`src/lib/supabase/test-phase4.ts`). | Frontend developer (Nares) tinggal memanggil 1 fungsi dengan type-safety lengkap. |
 
 ---
 
@@ -61,32 +62,44 @@ SELECT process_sale_transaction(
 ```sql
 SELECT get_receipt_details(p_sale_id := '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d');
 ```
-**Return JSON**:
+**Return JSON (Kompatibel dengan `SaleReceiptData`)**:
 ```json
 {
-  "sale_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-  "transaction_number": "TRX-20260921-213000-482",
-  "created_at": "2026-09-21T21:30:00Z",
-  "status": "COMPLETED",
-  "total_amount": 30000,
+  "sale": {
+    "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+    "transaction_number": "TRX-20260921-213000-482",
+    "store_id": "...",
+    "store_name": "Warkop Ngombeku",
+    "cashier_id": "...",
+    "cashier_name": "Lintang",
+    "total_amount": 30000,
+    "payment_method": "CASH",
+    "status": "COMPLETED",
+    "notes": null,
+    "created_at": "2026-09-21T21:30:00Z"
+  },
   "store": {
     "id": "...",
     "name": "Warkop Ngombeku",
     "address": "Jl. Raya Warkop No. 1",
-    "phone": "08123456789"
+    "phone": "08123456789",
+    "code": "NGOMBEKU"
   },
-  "cashier": {
-    "id": "...",
-    "full_name": "Lintang"
-  },
+  "cashier_name": "Lintang",
   "payment": {
-    "method": "CASH",
+    "id": "...",
+    "sale_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+    "payment_method": "CASH",
     "amount_paid": 50000,
     "amount_change": 20000,
-    "status": "COMPLETED"
+    "payment_status": "COMPLETED",
+    "created_at": "2026-09-21T21:30:00Z"
   },
   "items": [
     {
+      "id": "...",
+      "sale_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "product_id": "...",
       "product_name": "Kopi Tubruk",
       "unit_price": 15000,
       "quantity": 2,

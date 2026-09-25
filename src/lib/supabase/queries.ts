@@ -9,8 +9,13 @@ import {
   StockMovement,
   StockTransfer,
   LowStockProduct,
+  SaleReceiptData,
   Store,
   UserProfile,
+  StoreRevenueSummary,
+  SalesChartPoint,
+  TopSellingProduct,
+  AuditLog,
 } from '@/types';
 
 // Browser client instance
@@ -286,7 +291,7 @@ export async function processSale(params: {
 }
 
 // 7.1 GET RECEIPT DETAILS (Memanggil RPC get_receipt_details - Phase 4 Task 4.2)
-export async function getReceiptDetails(saleId: string) {
+export async function getReceiptDetails(saleId: string): Promise<SaleReceiptData> {
   const { data, error } = await supabase.rpc('get_receipt_details', {
     p_sale_id: saleId,
   });
@@ -296,7 +301,7 @@ export async function getReceiptDetails(saleId: string) {
     throw error;
   }
 
-  return data;
+  return data as SaleReceiptData;
 }
 
 // 8. SALES HISTORY
@@ -479,4 +484,146 @@ export async function getStockTransfers(storeId?: string): Promise<StockTransfer
     })),
   }));
 }
+
+// ============================================================================
+// PHASE 5: OWNER DASHBOARD & ANALYTICS (TASK 5.2)
+// ============================================================================
+
+// 12. STORE REVENUE SUMMARY (Omset & Transaksi per Toko)
+export async function getStoreRevenueSummary(): Promise<StoreRevenueSummary[]> {
+  const { data, error } = await supabase.rpc('get_store_revenue_summary');
+
+  if (error) {
+    console.error('Error fetching store revenue summary:', error.message);
+    throw error;
+  }
+
+  return (data || []).map((row: any) => ({
+    store_id: row.store_id,
+    store_name: row.store_name,
+    store_code: row.store_code,
+    total_revenue: Number(row.total_revenue) || 0,
+    total_transactions: Number(row.total_transactions) || 0,
+    today_revenue: Number(row.today_revenue) || 0,
+    today_transactions: Number(row.today_transactions) || 0,
+    this_month_revenue: Number(row.this_month_revenue) || 0,
+    this_month_transactions: Number(row.this_month_transactions) || 0,
+  }));
+}
+
+// 13. SALES CHART DATA (Grafik Penjualan Runtun Waktu Harian / Bulanan)
+export async function getSalesChartData(params?: {
+  storeId?: string;
+  period?: 'daily' | 'monthly';
+  limit?: number;
+}): Promise<SalesChartPoint[]> {
+  const { data, error } = await supabase.rpc('get_sales_chart_data', {
+    p_store_id: params?.storeId || null,
+    p_period: params?.period || 'daily',
+    p_limit: params?.limit || 30,
+  });
+
+  if (error) {
+    console.error('Error fetching sales chart data:', error.message);
+    throw error;
+  }
+
+  return (data || []).map((row: any) => ({
+    period_date: row.period_date,
+    revenue: Number(row.revenue) || 0,
+    transaction_count: Number(row.transaction_count) || 0,
+  }));
+}
+
+// 14. TOP SELLING PRODUCTS (Produk Paling Laris)
+export async function getTopSellingProducts(params?: {
+  storeId?: string;
+  limit?: number;
+}): Promise<TopSellingProduct[]> {
+  const { data, error } = await supabase.rpc('get_top_selling_products', {
+    p_store_id: params?.storeId || null,
+    p_limit: params?.limit || 5,
+  });
+
+  if (error) {
+    console.error('Error fetching top selling products:', error.message);
+    throw error;
+  }
+
+  return (data || []).map((row: any) => ({
+    product_id: row.product_id,
+    product_name: row.product_name,
+    sku: row.sku,
+    category_name: row.category_name,
+    total_units_sold: Number(row.total_units_sold) || 0,
+    total_revenue: Number(row.total_revenue) || 0,
+  }));
+}
+
+// ============================================================================
+// PHASE 5: AUDIT LOGS & USER MANAGEMENT QUERY (TASKS 5.1 & 5.3)
+// ============================================================================
+
+// 15. AUDIT LOGS QUERY (Task 5.3)
+export async function getAuditLogs(params?: {
+  storeId?: string;
+  action?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<AuditLog[]> {
+  const { data, error } = await supabase.rpc('get_audit_logs', {
+    p_store_id: params?.storeId || null,
+    p_action: params?.action || null,
+    p_limit: params?.limit || 50,
+    p_offset: params?.offset || 0,
+  });
+
+  if (error) {
+    console.error('Error fetching audit logs:', error.message);
+    throw error;
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    user_id: row.user_id,
+    user_name: row.user_name || 'Sistem',
+    store_id: row.store_id,
+    store_name: row.store_name || 'Global',
+    action: row.action,
+    entity: row.entity,
+    entity_id: row.entity_id,
+    metadata: row.metadata,
+    created_at: row.created_at,
+  }));
+}
+
+// 16. GET ALL USER PROFILES WITH ASSIGNED STORES (Task 5.1)
+export async function getUserProfiles(): Promise<UserProfile[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(`
+      id,
+      full_name,
+      role,
+      created_at,
+      user_stores (
+        store:stores (*)
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user profiles:', error.message);
+    throw error;
+  }
+
+  return (data || []).map((item: any) => ({
+    id: item.id,
+    full_name: item.full_name,
+    role: item.role,
+    created_at: item.created_at,
+    stores: item.user_stores?.map((us: any) => us.store).filter(Boolean) || [],
+  }));
+}
+
 

@@ -222,11 +222,9 @@ BEGIN
             RAISE EXCEPTION 'Harga satuan produk tidak valid';
         END IF;
 
-        -- Fetch Product Name & Current Inventory
-        SELECT p.name, COALESCE(i.quantity, 0)
-        INTO v_product_name, v_curr_stock
+        -- Fetch Product Name
+        SELECT p.name INTO v_product_name
         FROM products p
-        LEFT JOIN inventory i ON i.product_id = p.id AND i.store_id = p_store_id
         WHERE p.id = v_item.product_id;
 
         IF v_product_name IS NULL THEN
@@ -234,13 +232,16 @@ BEGIN
         END IF;
 
         -- Explicit Row-Level Locking on Inventory to prevent race conditions / concurrent checkout
-        PERFORM 1 
+        -- Mengunci baris inventaris toko dan membaca nilai stok terkini setelah lock diperoleh
+        v_curr_stock := 0;
+        SELECT COALESCE(quantity, 0)
+        INTO v_curr_stock
         FROM inventory 
         WHERE store_id = p_store_id AND product_id = v_item.product_id 
         FOR UPDATE;
 
-        IF v_curr_stock < v_item.quantity THEN
-            RAISE EXCEPTION 'Stok untuk produk "%" tidak mencukupi (Tersedia: %, Diminta: %)', v_product_name, v_curr_stock, v_item.quantity;
+        IF v_curr_stock IS NULL OR v_curr_stock < v_item.quantity THEN
+            RAISE EXCEPTION 'Stok untuk produk "%" tidak mencukupi (Tersedia: %, Diminta: %)', v_product_name, COALESCE(v_curr_stock, 0), v_item.quantity;
         END IF;
 
         v_total_amount := v_total_amount + (v_item.unit_price * v_item.quantity);
@@ -318,7 +319,7 @@ BEGIN
         'created_at', now()
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Function for Receipt Details Query (Phase 4 Task 4.2)
 CREATE OR REPLACE FUNCTION get_receipt_details(p_sale_id UUID)
@@ -327,32 +328,41 @@ DECLARE
     v_receipt JSONB;
 BEGIN
     SELECT jsonb_build_object(
-        'sale_id', s.id,
-        'transaction_number', s.transaction_number,
-        'created_at', s.created_at,
-        'status', s.status,
-        'total_amount', s.total_amount,
+        'sale', jsonb_build_object(
+            'id', s.id,
+            'transaction_number', s.transaction_number,
+            'store_id', s.store_id,
+            'store_name', st.name,
+            'cashier_id', s.cashier_id,
+            'cashier_name', COALESCE(p.full_name, 'Kasir POS'),
+            'total_amount', s.total_amount,
+            'payment_method', COALESCE(pay.payment_method, s.payment_method),
+            'status', s.status,
+            'notes', s.notes,
+            'created_at', s.created_at
+        ),
         'store', jsonb_build_object(
             'id', st.id,
             'name', st.name,
             'address', st.address,
-            'phone', st.phone
+            'phone', st.phone,
+            'code', st.code
         ),
-        'cashier', jsonb_build_object(
-            'id', s.cashier_id,
-            'full_name', COALESCE(p.full_name, 'Kasir POS')
-        ),
+        'cashier_name', COALESCE(p.full_name, 'Kasir POS'),
         'payment', jsonb_build_object(
-            'method', pay.payment_method,
-            'amount_paid', pay.amount_paid,
-            'amount_change', pay.amount_change,
-            'status', pay.payment_status,
-            'created_at', pay.created_at
+            'id', COALESCE(pay.id, s.id),
+            'sale_id', s.id,
+            'payment_method', COALESCE(pay.payment_method, s.payment_method),
+            'amount_paid', COALESCE(pay.amount_paid, s.total_amount),
+            'amount_change', COALESCE(pay.amount_change, 0),
+            'payment_status', COALESCE(pay.payment_status, 'COMPLETED'),
+            'created_at', COALESCE(pay.created_at, s.created_at)
         ),
         'items', COALESCE((
             SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', si.id,
+                    'sale_id', si.sale_id,
                     'product_id', si.product_id,
                     'product_name', pr.name,
                     'unit_price', si.unit_price,
@@ -363,7 +373,17 @@ BEGIN
             FROM sale_items si
             JOIN products pr ON pr.id = si.product_id
             WHERE si.sale_id = s.id
-        ), '[]'::jsonb)
+        ), '[]'::jsonb),
+        -- Flat aliases for backward compatibility
+        'sale_id', s.id,
+        'transaction_number', s.transaction_number,
+        'created_at', s.created_at,
+        'status', s.status,
+        'total_amount', s.total_amount,
+        'cashier', jsonb_build_object(
+            'id', s.cashier_id,
+            'full_name', COALESCE(p.full_name, 'Kasir POS')
+        )
     ) INTO v_receipt
     FROM sales s
     JOIN stores st ON st.id = s.store_id
@@ -377,7 +397,7 @@ BEGIN
 
     RETURN v_receipt;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Function for Manual Stock Adjustment
 CREATE OR REPLACE FUNCTION adjust_store_stock(
@@ -583,7 +603,9 @@ END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
 
 -- View for Cross-Store Low Stock Alerts
-CREATE OR REPLACE VIEW public.view_low_stock_alerts AS
+CREATE OR REPLACE VIEW public.view_low_stock_alerts
+WITH (security_invoker = true)
+AS
 SELECT
     s.id AS store_id,
     s.name AS store_name,
@@ -762,3 +784,212 @@ CREATE POLICY stock_transfer_items_insert ON public.stock_transfer_items FOR INS
             )
         )
     );
+
+-- ============================================================================
+-- PHASE 5: OWNER DASHBOARD & USER MANAGEMENT (TASKS 5.1 - 5.3)
+-- ============================================================================
+
+-- 1. View Ringkasan Omset & Transaksi per Toko (Task 5.2)
+CREATE OR REPLACE VIEW public.view_store_revenue_summary
+WITH (security_invoker = true)
+AS
+SELECT
+    s.id AS store_id,
+    s.name AS store_name,
+    s.code AS store_code,
+    COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED'), 0)::NUMERIC AS total_revenue,
+    COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED'), 0)::BIGINT AS total_transactions,
+    COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('day', now())), 0)::NUMERIC AS today_revenue,
+    COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('day', now())), 0)::BIGINT AS today_transactions,
+    COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('month', now())), 0)::NUMERIC AS this_month_revenue,
+    COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('month', now())), 0)::BIGINT AS this_month_transactions
+FROM public.stores s
+LEFT JOIN public.sales sal ON sal.store_id = s.id
+GROUP BY s.id, s.name, s.code;
+
+-- 2. RPC Function: Ambil Ringkasan Omset Toko (Task 5.2)
+CREATE OR REPLACE FUNCTION public.get_store_revenue_summary()
+RETURNS TABLE (
+    store_id UUID,
+    store_name TEXT,
+    store_code TEXT,
+    total_revenue NUMERIC,
+    total_transactions BIGINT,
+    today_revenue NUMERIC,
+    today_transactions BIGINT,
+    this_month_revenue NUMERIC,
+    this_month_transactions BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        s.id AS store_id,
+        s.name AS store_name,
+        s.code AS store_code,
+        COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED'), 0)::NUMERIC AS total_revenue,
+        COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED'), 0)::BIGINT AS total_transactions,
+        COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('day', now())), 0)::NUMERIC AS today_revenue,
+        COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('day', now())), 0)::BIGINT AS today_transactions,
+        COALESCE(SUM(sal.total_amount) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('month', now())), 0)::NUMERIC AS this_month_revenue,
+        COALESCE(COUNT(sal.id) FILTER (WHERE sal.status = 'COMPLETED' AND sal.created_at >= date_trunc('month', now())), 0)::BIGINT AS this_month_transactions
+    FROM public.stores s
+    LEFT JOIN public.sales sal ON sal.store_id = s.id
+    GROUP BY s.id, s.name, s.code
+    ORDER BY total_revenue DESC;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
+
+-- 3. RPC Function: Data Grafik Penjualan Harian & Bulanan (Task 5.2)
+CREATE OR REPLACE FUNCTION public.get_sales_chart_data(
+    p_store_id UUID DEFAULT NULL,
+    p_period TEXT DEFAULT 'daily',
+    p_limit INT DEFAULT 30
+)
+RETURNS TABLE (
+    period_date TEXT,
+    revenue NUMERIC,
+    transaction_count BIGINT
+) AS $$
+BEGIN
+    IF p_period = 'monthly' THEN
+        RETURN QUERY
+        SELECT
+            to_char(date_trunc('month', s.created_at), 'YYYY-MM') AS period_date,
+            COALESCE(SUM(s.total_amount), 0)::NUMERIC AS revenue,
+            COUNT(s.id)::BIGINT AS transaction_count
+        FROM public.sales s
+        WHERE s.status = 'COMPLETED'
+          AND (p_store_id IS NULL OR s.store_id = p_store_id)
+        GROUP BY date_trunc('month', s.created_at)
+        ORDER BY date_trunc('month', s.created_at) ASC
+        LIMIT p_limit;
+    ELSE
+        RETURN QUERY
+        SELECT
+            to_char(date_trunc('day', s.created_at), 'YYYY-MM-DD') AS period_date,
+            COALESCE(SUM(s.total_amount), 0)::NUMERIC AS revenue,
+            COUNT(s.id)::BIGINT AS transaction_count
+        FROM public.sales s
+        WHERE s.status = 'COMPLETED'
+          AND (p_store_id IS NULL OR s.store_id = p_store_id)
+          AND s.created_at >= (now() - (p_limit || ' days')::INTERVAL)
+        GROUP BY date_trunc('day', s.created_at)
+        ORDER BY date_trunc('day', s.created_at) ASC;
+    END IF;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
+
+-- 4. RPC Function: Top-Selling Products (Task 5.2)
+CREATE OR REPLACE FUNCTION public.get_top_selling_products(
+    p_store_id UUID DEFAULT NULL,
+    p_limit INT DEFAULT 5
+)
+RETURNS TABLE (
+    product_id UUID,
+    product_name TEXT,
+    sku TEXT,
+    category_name TEXT,
+    total_units_sold BIGINT,
+    total_revenue NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        p.id AS product_id,
+        p.name AS product_name,
+        p.sku,
+        COALESCE(c.name, 'Uncategorized') AS category_name,
+        COALESCE(SUM(si.quantity), 0)::BIGINT AS total_units_sold,
+        COALESCE(SUM(si.subtotal), 0)::NUMERIC AS total_revenue
+    FROM public.sale_items si
+    JOIN public.sales s ON s.id = si.sale_id
+    JOIN public.products p ON p.id = si.product_id
+    LEFT JOIN public.categories c ON c.id = p.category_id
+    WHERE s.status = 'COMPLETED'
+      AND (p_store_id IS NULL OR s.store_id = p_store_id)
+    GROUP BY p.id, p.name, p.sku, c.name
+    ORDER BY total_units_sold DESC, total_revenue DESC
+    LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
+
+-- 5. RLS Hardening pada Tabel audit_logs (Task 5.3)
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Owners can view all audit logs" ON public.audit_logs;
+CREATE POLICY "Owners can view all audit logs"
+ON public.audit_logs
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE profiles.id = auth.uid() AND profiles.role = 'owner'
+    )
+);
+
+DROP POLICY IF EXISTS "Managers can view store audit logs" ON public.audit_logs;
+CREATE POLICY "Managers can view store audit logs"
+ON public.audit_logs
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles p
+        JOIN public.user_stores us ON us.user_id = p.id
+        WHERE p.id = auth.uid()
+          AND p.role = 'manager'
+          AND us.store_id = audit_logs.store_id
+    )
+);
+
+DROP POLICY IF EXISTS "Authenticated users can insert audit logs" ON public.audit_logs;
+CREATE POLICY "Authenticated users can insert audit logs"
+ON public.audit_logs
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- 6. RPC Function: Ambil Audit Logs Terstruktur (Task 5.3)
+CREATE OR REPLACE FUNCTION public.get_audit_logs(
+    p_store_id UUID DEFAULT NULL,
+    p_action TEXT DEFAULT NULL,
+    p_limit INT DEFAULT 50,
+    p_offset INT DEFAULT 0
+)
+RETURNS TABLE (
+    id UUID,
+    user_id UUID,
+    user_name TEXT,
+    store_id UUID,
+    store_name TEXT,
+    action TEXT,
+    entity TEXT,
+    entity_id UUID,
+    metadata JSONB,
+    created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        al.id,
+        al.user_id,
+        COALESCE(p.full_name, 'Sistem') AS user_name,
+        al.store_id,
+        COALESCE(st.name, 'Global') AS store_name,
+        al.action,
+        al.entity,
+        al.entity_id,
+        al.metadata,
+        al.created_at
+    FROM public.audit_logs al
+    LEFT JOIN public.profiles p ON p.id = al.user_id
+    LEFT JOIN public.stores st ON st.id = al.store_id
+    WHERE (p_store_id IS NULL OR al.store_id = p_store_id)
+      AND (p_action IS NULL OR al.action = p_action)
+    ORDER BY al.created_at DESC
+    LIMIT p_limit
+    OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
+

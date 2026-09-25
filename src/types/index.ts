@@ -167,3 +167,44 @@ export interface LowStockProduct {
   minimum_stock: number;
   status: 'LOW_STOCK' | 'OUT_OF_STOCK';
 }
+
+export interface StoreRevenueSummary {
+  store_id: string;
+  store_name: string;
+  store_code: string;
+  total_revenue: number;
+  total_transactions: number;
+  today_revenue: number;
+  today_transactions: number;
+  this_month_revenue: number;
+  this_month_transactions: number;
+}
+
+export interface SalesChartPoint {
+  period_date: string;
+  revenue: number;
+  transaction_count: number;
+}
+
+export interface TopSellingProduct {
+  product_id: string;
+  product_name: string;
+  sku: string;
+  category_name: string;
+  total_units_sold: number;
+  total_revenue: number;
+}
+
+export interface AuditLog {
+  id: string;
+  user_id: string | null;
+  user_name?: string;
+  store_id: string | null;
+  store_name?: string;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  metadata: Record<string, any> | null;
+  created_at: string;
+}
+
